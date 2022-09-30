@@ -12,7 +12,7 @@
                 <div v-if="postTitle" class="row">
                     <i class="fa fa-arrow-left" @click="moveToList()" style="margin-right: 20%;"/>
                     <i v-if="postFingerPrint == this.ub_fingerPrint" class="fa fa-trash" @click="deleteOk()" style="margin-left: 20%;"/>
-                    <i v-else class="far fa-star" @click="toggleTooltip()" style="margin-left: 20%;"/>
+                    <i v-else class="far fa-star" v-tooltip="'준비중입니다!'" style="margin-left: 20%;"/>
                 </div>
                 <br/>
         </div>
@@ -76,7 +76,6 @@ export default {
                 this.postTitle = title;
                 this.postContents = contents;
             }
-            window.$('.fa-star').tooltip({title: "준비중입니다!", trigger: "focus"}); 
         } catch (e) {
             console.log(e);
             alert(e);
@@ -86,9 +85,6 @@ export default {
         ...mapState(['ub_fingerPrint'])
     },
     methods: {
-        toggleTooltip() {
-            window.$('.fa-star').tooltip('toggle');
-        },
         moveToList() {
             router.push('List');
         },

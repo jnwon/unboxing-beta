@@ -2,7 +2,7 @@
     <div class="container">
         <h2><i class="fas fa-box-open" @click="reload()"/></h2>
         <br/>
-        <h3 v-if="init"><i class="fa fa-spinner fa-spin"/></h3>
+        <h3 v-if="fetching"><i class="fa fa-spinner fa-spin"/></h3>
         <div class="row">
             <div class="col-sm-2"></div>
             <div class="col-sm-8">
@@ -16,15 +16,23 @@
                         </div>
                     </a>
                 </div>
-                <div v-if="!init" style="position:relative">
-                    <i @click="fetchNext()" class="fa fa-plus"/>
-                    <i @click="moveToEditor()" class="fa fa-pen" style="position:absolute; right: 0"/>
+                
+                <div v-if="!fetching">
+                    <div style="text-align: justify; padding: 10px">
+                        <span style="color:lightgrey; margin-right: 20px"><i class="fa fa-star" v-tooltip="'준비중입니다!'"/></span><span @click="toggleListMode()"><b>{{myList? 'ALL' : 'MY'}}</b></span>
+                        <i @click="fetchNext()" class="fa fa-plus" style="position:absolute; right: 48%"/>
+                        <i @click="moveToEditor()" class="fa fa-pen" style="position:absolute; right: 5%"/>
+                    </div>
+                    <br/>
+                    <div style="text-align:left; margin-left: 10px">
+                        
+                    </div>
                 </div>
             </div>
             <div class="col-sm-2"></div>
         </div>
         <p></p>
-        <!-- <button v-if="!init" type="submit" class="btn btn-info" @click="querying()">querying</button> -->
+        <!-- <button v-if="!fetching" type="submit" class="btn btn-info" @click="querying()">querying</button> -->
     </div>
 </template>
 
@@ -37,33 +45,17 @@ export default {
     name: 'view-List',
     data() {
         return {
-            init : true,
+            fetching : true,
+            myList : false,
             currentTimestamp : 0,
             lastTimestamp : 0,
-            postData: []
+            postData: [],
+            MyData: [],
+            myNextIndex: -1
         }
     },
     async mounted() {
-        this.currentTimestamp = new Date().getTime();
-        const postListRef = db.ref('posts').limitToFirst(10);
-        var timestamp;
-        var timeoffset;
-        try{
-            await postListRef.orderByChild('timestamp').on("value", (snapshot) => {
-                snapshot.forEach((data) => {
-                    timestamp = data.val().timestamp;
-                    timeoffset = this.currentTimestamp + timestamp;
-                    if(!data.val().lock || data.val().userId == this.ub_user.id){
-                        this.postData.push({postId: data.key, title: data.val().title, userId: data.val().userId, userName: data.val().userName, timeOffset: this.getLocaleTimeString(timeoffset), lock: data.val().lock});
-                    }
-                })
-                this.init = false;
-                this.lastTimestamp = timestamp;
-            })
-        } catch (e) {
-            console.log(e);
-            alert(e);
-        }
+        await this.fetchAll();
     },
     computed: {
         ...mapState(['ub_user'])
@@ -112,22 +104,94 @@ export default {
                 }
             }
         },
-        async fetchNext() {
+        async fetchAll() {
+            this.fetching = true;
+            this.postData = [];
+            this.currentTimestamp = new Date().getTime();
             const postListRef = db.ref('posts').limitToFirst(10);
             var timestamp;
             var timeoffset;
             try{
-                await postListRef.orderByChild('timestamp').startAfter(this.lastTimestamp).on("value", (snapshot) => {
+                await postListRef.orderByChild('timestamp').on("value", (snapshot) => {
                     snapshot.forEach((data) => {
                         timestamp = data.val().timestamp;
                         timeoffset = this.currentTimestamp + timestamp;
-                        this.postData.push({postId: data.key, title: data.val().title, timeOffset: this.getLocaleTimeString(timeoffset)});
+                        if(!data.val().lock || data.val().userId == this.ub_user.id){
+                            this.postData.push({postId: data.key, title: data.val().title, userId: data.val().userId, userName: data.val().userName, timeOffset: this.getLocaleTimeString(timeoffset), lock: data.val().lock});
+                        }
                     })
                     this.lastTimestamp = timestamp;
+                    this.fetching = false;
                 })
             } catch (e) {
                 console.log(e);
                 alert(e);
+            }
+        },
+        async fetchNext() {
+            if(this.myList && this.myNextIndex >= 0 ){
+                for(var i = this.myNextIndex; i >= (this.myNextIndex -10 >=0? this.myNextIndex -10 : 0); i--){
+                    this.postData.push(this.MyData[i]);
+                }
+                this.myNextIndex = i;
+            }
+            else{
+                const postListRef = db.ref('posts').limitToFirst(10);
+                var timestamp;
+                var timeoffset;
+                try{
+                    await postListRef.orderByChild('timestamp').startAfter(this.lastTimestamp).on("value", (snapshot) => {
+                        snapshot.forEach((data) => {
+                            timestamp = data.val().timestamp;
+                            timeoffset = this.currentTimestamp + timestamp;
+                            if(!data.val().lock || data.val().userId == this.ub_user.id){
+                                this.postData.push({postId: data.key, title: data.val().title, userId: data.val().userId, userName: data.val().userName, timeOffset: this.getLocaleTimeString(timeoffset), lock: data.val().lock});
+                            }
+                        })
+                        if(timestamp){
+                            this.lastTimestamp = timestamp;
+                        }
+                    })
+                } catch (e) {
+                    console.log(e);
+                    alert(e);
+                }
+            }
+        },
+        async fetchMy(){
+            this.fetching = true;
+            this.postData = [];
+            this.MyData = [];
+            this.currentTimestamp = new Date().getTime();
+            const postListRef = db.ref('posts');
+            var timestamp;
+            var timeoffset;
+            try{
+                await postListRef.orderByChild('userId').startAt(this.ub_user.id).endAt(this.ub_user.id).once("value", (snapshot) => {
+                    snapshot.forEach((data) => {
+                        timestamp = data.val().timestamp;
+                        timeoffset = this.currentTimestamp + timestamp;
+                        this.MyData.push({postId: data.key, title: data.val().title, userId: data.val().userId, userName: data.val().userName, timeOffset: this.getLocaleTimeString(timeoffset), lock: data.val().lock});
+                    })
+                    var myDataLen = this.MyData.length;
+                    for(var i=myDataLen-1; i >= (myDataLen -10 >=0? myDataLen -10 : 0); i--){
+                        this.postData.push(this.MyData[i]);
+                    }
+                    this.myNextIndex = i;
+                })
+                this.fetching = false;
+            } catch (e) {
+                console.log(e);
+                alert(e);
+            }
+        },
+        async toggleListMode(){
+            this.myList = !this.myList;
+            if(this.myList){
+                this.fetchMy();
+            }
+            else{
+                this.fetchAll();
             }
         },
         async querying() {

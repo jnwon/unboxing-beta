@@ -6,6 +6,15 @@ import './registerServiceWorker'
 
 const app = createApp(App)
 
+app.directive('tooltip', {
+    mounted(el, binding) {
+        window.$(el).tooltip({
+            title: binding.value,
+            triger: 'focus'
+        })
+    }
+})
+
 app.use(router)
 app.use(store)
 app.mount('#app')
