@@ -13,6 +13,7 @@
                 <!-- <button @click="boxTravel()">each</button> -->
                 <i class="fa fa-arrow-left" @click="cancelPost()" style="margin-right: 20%;"/>
                 <i :class="submitting ? 'fa fa-spinner fa-spin' : 'fa fa-upload'" @click="submitPost()" style="margin-left: 20%;"/>
+                <i :class="lock? 'fa fa-lock' : 'fa fa-unlock'" :style="'float: right; ' + (lock? 'color: green' : '')" @click="toggleLock()"/>
             </div>
         </div>
         <div class="col-sm-1"></div>
@@ -47,7 +48,8 @@ export default {
     data() {
         return {
             submitting : false,
-            passwordInput : '',
+            // passwordInput : '',
+            lock : false,
             postTitle : '',
             categorySelect : '',
             postMetadataFront : '<div class="post-component" style="text-align: left;"><select class="post-component">',
@@ -126,6 +128,9 @@ export default {
         setPassword() {
             window.$("#registerPassword").modal('show');
         },
+        toggleLock() {
+            this.lock = !this.lock;
+        },
         async submitPost() {
             // if(this.passwordInput){
                 var date = new Date();
@@ -140,6 +145,7 @@ export default {
                         title: title,
                         contents: contents,
                         timestamp: -date.getTime(),
+                        lock: this.lock,
                         // password: this.passwordInput
                         userId: this.ub_user.id,
                         userName: this.ub_user.name,
@@ -149,6 +155,7 @@ export default {
                     updates['/posts/' + newPostKey] = {
                         title: title,
                         timestamp: -date.getTime(),
+                        lock: this.lock,
                         userId: this.ub_user.id,
                         userName: this.ub_user.name,
                         tag: null

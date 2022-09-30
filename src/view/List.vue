@@ -8,7 +8,7 @@
             <div class="col-sm-8">
                 <div class="list-group">
                     <a v-for="(post, index) in postData" :key="index" @click="moveToViewer(post.postId)" href="#" class="list-group-item" style="display: flex; justify-content: space-between;">
-                        <span>{{post.title}}</span>
+                        <span>{{post.title}}&nbsp;<i v-if="post.lock" class="fa fa-lock" style="color: green; font-size: smaller;"/></span>
                         <span style="font-size:small; color:lightgrey">{{post.userName}} | {{post.timeOffset}}</span>
                     </a>
                 </div>
@@ -27,6 +27,7 @@
 <script>
 import router from '@/router';
 import db from '@/db';
+import { mapState } from 'vuex';
 
 export default {
     name: 'view-List',
@@ -48,7 +49,9 @@ export default {
                 snapshot.forEach((data) => {
                     timestamp = data.val().timestamp;
                     timeoffset = this.currentTimestamp + timestamp;
-                    this.postData.push({postId: data.key, title: data.val().title, userName: data.val().userName, timeOffset: this.getLocaleTimeString(timeoffset)});
+                    if(!data.val().lock || data.val().userId == this.ub_user.id){
+                        this.postData.push({postId: data.key, title: data.val().title, userName: data.val().userName, timeOffset: this.getLocaleTimeString(timeoffset), lock: data.val().lock});
+                    }
                 })
                 this.init = false;
                 this.lastTimestamp = timestamp;
@@ -57,6 +60,9 @@ export default {
             console.log(e);
             alert(e);
         }
+    },
+    computed: {
+        ...mapState(['ub_user'])
     },
     methods: {
         reload() {

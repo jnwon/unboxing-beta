@@ -4,7 +4,7 @@
             <div class="col-sm-8">
                 <div class="row" style="height: auto; min-height: 85%;">
                     <h3 v-if="postTitle == ''"><i class="fa fa-spinner fa-spin"/></h3>
-                    <h3 style="text-align: left;">{{postTitle}}</h3>
+                    <h3 style="text-align: left;">{{postTitle}}&nbsp;<span v-if="lock" style="color: green; font-size: medium;"><i class="fa fa-lock" style="position: relative; bottom: 2px"/></span></h3>
                     <br/>
                     <div v-html="postContents"></div>
                 </div>
@@ -49,21 +49,33 @@ export default {
     data() {
         return {
             // password: 0,
-            passwordInput: '',
+            // passwordInput: '',
+            lock: false,
             postTitle: '',
             postContents: '',
             postFingerPrint: ''
         }
     },
     async mounted() {
+        var title;
+        var contents;
         const postRef = db.ref('postsWithContents/'+this.$route.query.postId);
         try{
             await postRef.get().then((snapshot) => {
-                this.postTitle = snapshot.val().title;
-                this.postContents = snapshot.val().contents;
+                this.lock = snapshot.val().lock;
+                title = snapshot.val().title;
+                contents = snapshot.val().contents;
                 // this.password = snapshot.val().password;
                 this.postFingerPrint = snapshot.val().fingerPrint;
             })
+            if(this.lock && this.postFingerPrint != this.ub_fingerPrint){
+                alert("비밀글입니다.");
+                this.moveToList();
+            }
+            else{
+                this.postTitle = title;
+                this.postContents = contents;
+            }
             window.$('.fa-star').tooltip({title: "준비중입니다!", trigger: "focus"}); 
         } catch (e) {
             console.log(e);
