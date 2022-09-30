@@ -9,7 +9,9 @@
                 <div class="list-group">
                     <a v-for="(post, index) in postData" :key="index" @click="moveToViewer(post.postId)" href="#" class="list-group-item" style="display: flex; justify-content: space-between;">
                         <span>{{post.title}}&nbsp;<i v-if="post.lock" class="fa fa-lock" style="color: green; font-size: smaller;"/></span>
-                        <span style="font-size:small; color:lightgrey">{{post.userName}} | {{post.timeOffset}}</span>
+                        <div>
+                            <span :style="'font-size:small; color:' + (post.userId == this.ub_user.id? 'coral' : 'lightgrey')">{{post.userName}}</span><span style="font-size:small; color:lightgrey"> | {{post.timeOffset}}</span>
+                        </div>
                     </a>
                 </div>
                 <div v-if="!init" style="position:relative">
@@ -50,7 +52,7 @@ export default {
                     timestamp = data.val().timestamp;
                     timeoffset = this.currentTimestamp + timestamp;
                     if(!data.val().lock || data.val().userId == this.ub_user.id){
-                        this.postData.push({postId: data.key, title: data.val().title, userName: data.val().userName, timeOffset: this.getLocaleTimeString(timeoffset), lock: data.val().lock});
+                        this.postData.push({postId: data.key, title: data.val().title, userId: data.val().userId, userName: data.val().userName, timeOffset: this.getLocaleTimeString(timeoffset), lock: data.val().lock});
                     }
                 })
                 this.init = false;
