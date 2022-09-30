@@ -8,8 +8,10 @@
             <div class="col-sm-8">
                 <div class="list-group">
                     <a v-for="(post, index) in postData" :key="index" @click="moveToViewer(post.postId)" href="#" class="list-group-item" style="display: flex; justify-content: space-between;">
-                        <span>{{post.title}}&nbsp;<i v-if="post.lock" class="fa fa-lock" style="color: green; font-size: smaller;"/></span>
-                        <div>
+                        <div style="max-width: 60%; text-align: left;">
+                            <span>{{post.title}}&nbsp;<i v-if="post.lock" class="fa fa-lock" style="color: green; font-size: smaller;"/></span>
+                        </div>
+                        <div style="max-width: 40%">
                             <span :style="'font-size:small; color:' + (post.userId == this.ub_user.id? 'coral' : 'lightgrey')">{{post.userName}}</span><span style="font-size:small; color:lightgrey"> | {{post.timeOffset}}</span>
                         </div>
                     </a>
