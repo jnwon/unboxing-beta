@@ -6,6 +6,9 @@
                 <div class="col-sm-4">
                     <input type="text" class="form-control" placeholder="포스트 제목을 입력하세요" v-model="postTitle">
                 </div>
+                <div class="col-sm-8" style="text-align: left; padding-top:5px">
+                    <span v-for="(ub_tag, index) in this.ub_tags" :key="index" :style="'margin-right: 15px; font-size: large;' + (tags[ub_tag.id]? 'color: orange' : 'color: lightgrey')" @click="toggleTag(ub_tag.id)"><b>#{{ub_tag.name}}</b></span>
+                </div>
             </div>
             <br/>
             <div class="row">
@@ -49,6 +52,7 @@ export default {
         return {
             submitting : false,
             // passwordInput : '',
+            tags : [],
             lock : false,
             postTitle : '',
             categorySelect : '',
@@ -67,8 +71,17 @@ export default {
                             +'</div><br/>'
         }
     },
+    created(){
+        if(!this.ub_user){
+            location.href="/";
+        }
+    },
     async mounted() {
-        this.categorySelect += '<option>그림</option><option>영어단어</option><option>한자공부</option>';
+
+        this.ub_tags.forEach((tag) => {
+            this.tags[tag.id] = 0;
+            this.categorySelect += '<option>' + tag.name + '</option>'
+        })
 
         // var postMetadata = this.postMetadataFront + this.categorySelect + this.postMetadataRear;
         var boxTemplate = this.boxTemplateFront + this.categorySelect + this.boxTemplateRear;
@@ -117,7 +130,7 @@ export default {
         // window.$('#summernote').summernote('editor.pasteHTML', postMetadata);
     },
     computed: {
-        ...mapState(['ub_user', 'ub_fingerPrint'])
+        ...mapState(['ub_user', 'ub_tags', 'ub_fingerPrint'])
     },
     methods: {
         boxTravel(){
@@ -128,6 +141,9 @@ export default {
         setPassword() {
             window.$("#registerPassword").modal('show');
         },
+        toggleTag(tagId) {
+            this.tags[tagId] = !this.tags[tagId];
+        },
         toggleLock() {
             this.lock = !this.lock;
         },
@@ -136,6 +152,15 @@ export default {
                 var date = new Date();
                 var title = this.postTitle == '' ? date.toLocaleString() + '에 저장된 글입니다.' : this.postTitle;
                 var contents = window.$(".note-editable").html();
+                var selectedTags = {}
+                var i=0, k=0;
+                for(var key in this.tags) {
+                    if(this.tags[key]){
+                        selectedTags[k++] = {id: key, name: this.ub_tags[i].name}
+                    }
+                    i++;
+                }
+
                 var postListRef = db.ref('posts');
                 var newPostRef = postListRef.push();
                 var newPostKey = newPostRef.key;
@@ -149,7 +174,7 @@ export default {
                         // password: this.passwordInput
                         userId: this.ub_user.id,
                         userName: this.ub_user.name,
-                        tag: null,
+                        tags: selectedTags,
                         fingerPrint: this.ub_fingerPrint
                     };
                     updates['/posts/' + newPostKey] = {
@@ -158,7 +183,7 @@ export default {
                         lock: this.lock,
                         userId: this.ub_user.id,
                         userName: this.ub_user.name,
-                        tag: null
+                        tags: selectedTags
                     };
                     this.submitting = true;
                     window.$('#summernote').summernote('disable');

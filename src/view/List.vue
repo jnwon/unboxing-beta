@@ -55,7 +55,12 @@ export default {
         }
     },
     async mounted() {
-        await this.fetchAll();
+        if(this.ub_user){
+            await this.fetchAll();
+        }
+        else{
+            location.href="/";
+        }
     },
     computed: {
         ...mapState(['ub_user'])

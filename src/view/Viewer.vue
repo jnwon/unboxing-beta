@@ -7,6 +7,10 @@
                     <h3 style="text-align: left;">{{postTitle}}&nbsp;<span v-if="lock" style="color: green; font-size: medium;"><i class="fa fa-lock" style="position: relative; bottom: 2px"/></span></h3>
                     <br/>
                     <div v-html="postContents"></div>
+                    <br/>
+                    <div style="text-align: left">
+                        <span v-for="(tag, index) in this.postTags" :key="index" style="margin-right: 15px; font-size: large; color: orange"><b>#{{tag.name}}</b></span>
+                    </div>
                 </div>
                 <br/>
                 <div v-if="postTitle" class="row">
@@ -26,13 +30,13 @@
     
             <!-- Modal content-->
             <div class="modal-content">
-            <div class="modal-body">
-                <input type="text" class="form-control" v-model="passwordInput" @keyup.enter="deleteOk()" placeholder="비밀번호를 입력하세요."/>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-warning" @click="deleteOk()">삭제</button>
-                <button type="button" class="btn btn-default" data-dismiss="modal">취소</button>
-            </div>
+                <div class="modal-body">
+                    <input type="text" class="form-control" v-model="passwordInput" @keyup.enter="deleteOk()" placeholder="비밀번호를 입력하세요."/>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-warning" @click="deleteOk()">삭제</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">취소</button>
+                </div>
             </div>
     
         </div>
@@ -53,18 +57,26 @@ export default {
             lock: false,
             postTitle: '',
             postContents: '',
+            postTags: {},
             postFingerPrint: ''
+        }
+    },
+    created(){
+        if(!this.ub_user){
+            location.href="/";
         }
     },
     async mounted() {
         var title;
         var contents;
+        var tags;
         const postRef = db.ref('postsWithContents/'+this.$route.query.postId);
         try{
             await postRef.get().then((snapshot) => {
                 this.lock = snapshot.val().lock;
                 title = snapshot.val().title;
                 contents = snapshot.val().contents;
+                tags = snapshot.val().tags;
                 // this.password = snapshot.val().password;
                 this.postFingerPrint = snapshot.val().fingerPrint;
             })
@@ -75,6 +87,8 @@ export default {
             else{
                 this.postTitle = title;
                 this.postContents = contents;
+                this.postTags = tags;
+                console.log(this.postTags);
             }
         } catch (e) {
             console.log(e);
@@ -82,7 +96,7 @@ export default {
         }
     },
     computed: {
-        ...mapState(['ub_fingerPrint'])
+        ...mapState(['ub_fingerPrint', 'ub_user'])
     },
     methods: {
         moveToList() {

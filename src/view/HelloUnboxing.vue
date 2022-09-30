@@ -8,10 +8,28 @@
                 <div class="col-sm-3"></div>
                 <div class="col-sm-6">
                     <div class="input-group">
-                        <input type="text" class="form-control" v-model="nameInput" @keydown.enter="createAccount()">
+                        <input id="nameInput" type="text" class="form-control" v-model="nameInput" @keydown.enter="createAccount()">
                         <div class="input-group-btn">
                           <button class="btn btn-default">
                             <i @click="createAccount()" class="fa fa-check"/>
+                          </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-3"></div>
+            </div>
+            <br/>
+            <br/>
+            <h3>또는 백업된 계정 Key를<br/>입력하세요.</h3>
+            <br/>
+            <div class="row">
+                <div class="col-sm-3"></div>
+                <div class="col-sm-6">
+                    <div class="input-group">
+                        <input id="keyInput" type="text" class="form-control" v-model="keyInput" @keydown.enter="recoverAccount()">
+                        <div class="input-group-btn">
+                          <button class="btn btn-default">
+                            <i @click="recoverAccount()" class="fa fa-check"/>
                           </button>
                         </div>
                     </div>
@@ -60,12 +78,12 @@
       ...mapMutations(['setUserInfo', 'setTags', 'setFingerPrint']),
       async createAccount() {
         if(!this.nameInput){
-          window.$('input').focus();
-          window.$('input').animate({left: 0}, 'fast', function() {window.$('input').blur();})
-          window.$('input').animate({left: 0}, 'fast', function() {window.$('input').focus();})
-          window.$('input').animate({left: 0}, 'fast', function() {window.$('input').blur();})
-          window.$('input').animate({left: 0}, 'fast', function() {window.$('input').focus();})
-          window.$('input').animate({left: 0}, 'fast', function() {window.$('input').blur();})
+          window.$('#nameInput').focus();
+          window.$('#nameInput').animate({left: 0}, 'fast', function() {window.$('#nameInput').blur();})
+          window.$('#nameInput').animate({left: 0}, 'fast', function() {window.$('#nameInput').focus();})
+          window.$('#nameInput').animate({left: 0}, 'fast', function() {window.$('#nameInput').blur();})
+          window.$('#nameInput').animate({left: 0}, 'fast', function() {window.$('#nameInput').focus();})
+          window.$('#nameInput').animate({left: 0}, 'fast', function() {window.$('#nameInput').blur();})
         }
         else{
           const fingerPrint = crypto.HmacMD5(this.nameInput + new Date().getTime(), 'test').toString();        
@@ -114,6 +132,57 @@
           }
         }
       },
+      async recoverAccount() {
+        if(!this.keyInput){
+          window.$('#keyInput').focus();
+          window.$('#keyInput').animate({left: 0}, 'fast', function() {window.$('#keyInput').blur();})
+          window.$('#keyInput').animate({left: 0}, 'fast', function() {window.$('#keyInput').focus();})
+          window.$('#keyInput').animate({left: 0}, 'fast', function() {window.$('#keyInput').blur();})
+          window.$('#keyInput').animate({left: 0}, 'fast', function() {window.$('#keyInput').focus();})
+          window.$('#keyInput').animate({left: 0}, 'fast', function() {window.$('#keyInput').blur();})
+        }
+        else{
+          var userListRef = db.ref('users');
+          try{
+            await userListRef.orderByChild('fingerPrint').startAt(this.keyInput).endAt(this.keyInput).once("value", (snapshot) => {
+              if(snapshot.val()){
+                const userInfo = snapshot.val();
+                const userId = Object.keys(userInfo)[0];
+                const userInfoObj = userInfo[userId];
+                this.setFingerPrint(userInfoObj.fingerPrint);
+                this.setUserInfo({
+                  id: userId,
+                  name: userInfoObj.name,
+                  tutorial: 0
+                });
+
+                var tags = []
+                for (var key in userInfoObj.tags) {
+                  tags.push({id: key, name: userInfoObj.tags[key].name})
+                }
+                this.setTags(tags);
+
+                this.nameInput = userInfoObj.name;
+                window.$('#step1').animate({opacity: 0}, 'slow', function() {window.$('#step1').hide()})
+                window.$('#step2').animate({opacity: 0}, 'slow');
+                window.$('#step2').animate({opacity: 1}, 'slow');
+                window.$('#step2').animate({opacity: 1}, 1000);
+                window.$('#step2').animate({opacity: 0}, 'slow', function() {window.$('#step2').hide()})
+                window.$('#step3').animate({opacity: 0}, 3000)
+                window.$('#step3').animate({opacity: 1}, 'slow')
+                window.$('#step3').animate({opacity: 1}, 2000, function() {location.href="/list"});
+              }
+              else {
+                alert("존재하지 않는 계정정보입니다.");
+                return 1;
+              }
+            });
+          } catch(e) {
+            console.log(e);
+            alert(e);
+          }
+        }
+      }
     }
   }
   </script>
