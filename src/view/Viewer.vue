@@ -70,7 +70,7 @@ export default {
         var title;
         var contents;
         var tags;
-        const postRef = db.ref('postsWithContents/'+this.$route.query.postId);
+        const postRef = db.db.ref('postsWithContents/'+this.$route.query.postId);
         try{
             await postRef.get().then((snapshot) => {
                 this.lock = snapshot.val().lock;
@@ -112,7 +112,7 @@ export default {
                 updates['/postsWithContents/' + this.$route.query.postId] = null;
                 updates['/posts/' + this.$route.query.postId] = null;
                 try{
-                    await db.ref().update(updates);
+                    await db.db.ref().update(updates);
                     window.$("#deleteConfirm").modal('hide');
                     this.moveToList();
                 } catch (e) {

@@ -8,10 +8,10 @@
             <div class="col-sm-8">
                 <div class="list-group">
                     <a v-for="(post, index) in postData" :key="index" @click="moveToViewer(post.postId)" href="#" class="list-group-item" style="display: flex; justify-content: space-between;">
-                        <div style="max-width: 60%; text-align: left;">
+                        <div style="max-width: 50%; text-align: left;">
                             <span>{{post.title}}&nbsp;<i v-if="post.lock" class="fa fa-lock" style="color: green; font-size: smaller;"/></span>
                         </div>
-                        <div style="max-width: 40%">
+                        <div style="max-width: 50%">
                             <span :style="'font-size:small; color:' + (post.userId == this.ub_user.id? 'coral' : 'lightgrey')">{{post.userName}}</span><span style="font-size:small; color:lightgrey"> | {{post.timeOffset}}</span>
                         </div>
                     </a>
@@ -113,7 +113,7 @@ export default {
             this.fetching = true;
             this.postData = [];
             this.currentTimestamp = new Date().getTime();
-            const postListRef = db.ref('posts').limitToFirst(10);
+            const postListRef = db.db.ref('posts').limitToFirst(10);
             var timestamp;
             var timeoffset;
             try{
@@ -141,7 +141,7 @@ export default {
                 this.myNextIndex = i;
             }
             else{
-                const postListRef = db.ref('posts').limitToFirst(10);
+                const postListRef = db.db.ref('posts').limitToFirst(10);
                 var timestamp;
                 var timeoffset;
                 try{
@@ -168,7 +168,7 @@ export default {
             this.postData = [];
             this.MyData = [];
             this.currentTimestamp = new Date().getTime();
-            const postListRef = db.ref('posts');
+            const postListRef = db.db.ref('posts');
             var timestamp;
             var timeoffset;
             try{
@@ -201,13 +201,13 @@ export default {
         },
         async querying() {
             var updates = {};
-            const postListRef = db.ref('postsWithContents');
+            const postListRef = db.db.ref('postsWithContents');
             await postListRef.get().then((snapshots) => {
                 snapshots.forEach((snapshot) => {
                     updates['/postsWithContents/' + snapshot.key + '/password'] = 1234;
                 })
             })
-            await db.ref().update(updates);
+            await db.db.ref().update(updates);
             console.log('updated!');
         }
     }

@@ -2,7 +2,7 @@
     <div class="container" style="opacity: 0">
           <h2><i class="fas fa-box-open"/></h2>
           <div id="step1">
-            <h3>이름을 입력하세요.</h3>
+            <h3>처음 오셨나요?<br/>사용하실 이름을 입력하세요.</h3>
             <br/>
             <div class="row">
                 <div class="col-sm-3"></div>
@@ -87,7 +87,7 @@
         }
         else{
           const fingerPrint = crypto.HmacMD5(this.nameInput + new Date().getTime(), 'test').toString();        
-          var userListRef = db.ref('users');
+          var userListRef = db.db.ref('users');
           var newUserRef = userListRef.push();
           var newUserKey = newUserRef.key;
   
@@ -97,7 +97,7 @@
               tags: null,
               fingerPrint: fingerPrint
             });
-            var tagListRef = db.ref('users/' + newUserKey + '/tags');
+            var tagListRef = db.db.ref('users/' + newUserKey + '/tags');
             var newTagRef1 = tagListRef.push();
             var newTagRef2 = tagListRef.push();
             var newTagKey1 = newTagRef1.key;
@@ -105,7 +105,7 @@
             var updates = {};
             updates['users/' + newUserKey + '/tags/' + newTagKey1] = {name: '일상'};
             updates['users/' + newUserKey + '/tags/' + newTagKey2] = {name: '공부'};
-            await db.ref().update(updates);
+            await db.db.ref().update(updates);
   
             this.setFingerPrint(fingerPrint);
             this.setUserInfo({
@@ -142,7 +142,7 @@
           window.$('#keyInput').animate({left: 0}, 'fast', function() {window.$('#keyInput').blur();})
         }
         else{
-          var userListRef = db.ref('users');
+          var userListRef = db.db.ref('users');
           try{
             await userListRef.orderByChild('fingerPrint').startAt(this.keyInput).endAt(this.keyInput).once("value", (snapshot) => {
               if(snapshot.val()){

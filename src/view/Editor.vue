@@ -123,6 +123,21 @@ export default {
             ],
             buttons: {
                 box: BoxButton
+            },
+            callbacks: {
+                onImageUpload: async function(files) {
+                    for(var i=0; i < files.length; i++){
+                        var ref = db.storage.ref().child(new Date().getTime()+'_'+files[i].name);
+                        await ref.put(files[i]).then(() => {
+                            ref.getDownloadURL().then(async (url) => {
+                                await window.$('#summernote').summernote('insertImage', url, function ($image) {
+                                    $image.css('max-width', '800px')
+                                });
+                                window.$('#summernote').summernote('pasteHTML', '<p style="text-align: left;"><br/></p>');
+                            })
+                        })
+                    }
+                }
             }
         });
 
@@ -161,7 +176,7 @@ export default {
                     i++;
                 }
 
-                var postListRef = db.ref('posts');
+                var postListRef = db.db.ref('posts');
                 var newPostRef = postListRef.push();
                 var newPostKey = newPostRef.key;
                 var updates = {};
@@ -187,7 +202,7 @@ export default {
                     };
                     this.submitting = true;
                     window.$('#summernote').summernote('disable');
-                    await db.ref().update(updates);
+                    await db.db.ref().update(updates);
                     window.$("#registerPassword").modal('hide');
                     router.push({name: 'Viewer', query: {postId: newPostKey}})
                 } catch (e) {
