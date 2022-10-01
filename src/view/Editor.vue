@@ -52,19 +52,19 @@ export default {
         return {
             isEditmode : false,
             submitting : false,
-            // passwordInput : '',
             tags : [],
             postTags : [],
             lock : false,
             postTitle : '',
             postTimestamp : 0,
+            children : {},
+            postChildren : {},
             categorySelect : '',
             boxTemplateFront : '<div class="box-component" style="text-align: left;">'
-                                +'<blockquote>'
-                                    +'<select class="box-component">',
+                                +'<blockquote style="text-align: left;">'
+                                    +'<select class="box-component" style="margin-right: 5px">',
             boxTemplateRear : '</select>'
-                                    +'&nbsp;&nbsp;'
-                                    +'<input class="box-component" type="text" placeholder="박스 제목을 입력하세요"><p><br/></p><p><br/></p>'
+                                    +'<input class="box-component" type="text" placeholder="박스 제목을 입력하세요"><i class="fa fa-trash" style="margin-left: 15px"></i><p><br/></p><p><br/></p>'
                                 +'</blockquote>'
                             +'</div><br/>'
         }
@@ -78,7 +78,7 @@ export default {
 
         this.ub_tags.forEach((tag) => {
             this.tags[tag.id] = 0;
-            this.categorySelect += '<option>' + tag.name + '</option>'
+            this.categorySelect += '<option value=' + tag.id + '>' + tag.name + '</option>'
         })
 
         var boxTemplate = this.boxTemplateFront + this.categorySelect + this.boxTemplateRear;
@@ -142,6 +142,10 @@ export default {
 
         window.$('#summernote').summernote('justifyLeft');
 
+        window.$(document).on('click', '.fa-trash', function(){
+            window.$(this).closest('div.box-component').remove();
+        })
+
         // function isMobile() {
         //     var user = navigator.userAgent;
         //     var is_mobile = false;
@@ -173,6 +177,9 @@ export default {
                     if(snapshot.val().tags){
                         this.postTags = snapshot.val().tags;
                     }
+                    if(snapshot.val().children){
+                        this.postChildren = snapshot.val().children;
+                    }
                 })
                 if(fingerPrint != this.ub_fingerPrint){
                     alert("포스트 작성자만 수정할 수 있습니다.");
@@ -186,6 +193,16 @@ export default {
                         })
                     }
                     window.$('#summernote').summernote('pasteHTML', contents);
+                    window.$(document).find(".fa-trash").css("display", '');
+
+                    var categories = this.categorySelect;
+                    window.$("div.box-component").each(function(index, element){
+                        var selectedTagId = window.$(element).find("span.box-component").attr("tagid");
+                        var boxTitle = window.$(element).find("h3.box-component").text();
+                        window.$(element).find("h3.box-component").replaceWith('<select class="box-component" style="margin-right: 5px">' + categories + '</select>');
+                        window.$(element).find("span.box-component").replaceWith('<input class="box-component" type="text" value="' + boxTitle + '">');
+                        window.$(element).find("select.box-component").val(selectedTagId).attr("selected", true);
+                    })
                 }
             } catch (e) {
                 console.log(e);
@@ -198,11 +215,6 @@ export default {
         ...mapState(['ub_user', 'ub_tags', 'ub_fingerPrint'])
     },
     methods: {
-        boxTravel(){
-            window.$("div.box-component").each(function(index, element){
-                console.log(index, element);
-            })
-        },
         setPassword() {
             window.$("#registerPassword").modal('show');
         },
@@ -213,57 +225,118 @@ export default {
             this.lock = !this.lock;
         },
         async submitPost() {
-            // if(this.passwordInput){
-                var date = new Date();
-                var title = this.postTitle == '' ? date.toLocaleString() + '에 저장된 글입니다.' : this.postTitle;
-                var contents = window.$(".note-editable").html();
-                var selectedTags = {}
-                var i=0, k=0;
-                for(var key in this.tags) {
-                    if(this.tags[key]){
-                        selectedTags[k++] = {id: key, name: this.ub_tags[i].name}
-                    }
-                    i++;
+            var date = new Date();
+            var boxLock = this.lock;
+            var children = this.children;
+            var boxUserInfo = this.ub_user;
+            var boxFingerPrint = this.ub_fingerPrint;
+            var updates = {};
+            
+            var postListRef = db.db.ref('posts');
+            var newPostRef = postListRef.push();
+            var postKey = this.isEditmode? this.$route.query.postId : newPostRef.key;
+
+            window.$("div.box-component").each(function(index, element){
+                window.$(element).find(".fa-trash").css("display", 'none');
+                var isNewBox = false;
+                var newBoxRef = postListRef.push()
+                var boxKey = window.$(element).prop("id")? window.$(element).prop("id") : newBoxRef.key;
+                if(!window.$(element).prop("id")){
+                    isNewBox = true;
+                    window.$(element).prop("id", boxKey);
+                    window.$(element).attr("timestamp", -date.getTime());
                 }
 
-                var postListRef = db.db.ref('posts');
-                var newPostRef = postListRef.push();
-                var postKey = this.isEditmode? this.$route.query.postId : newPostRef.key;
-                var updates = {};
-                try {
-                    updates['/postsWithContents/' + postKey] = {
-                        title: title,
-                        contents: contents,
-                        timestamp: this.isEditmode? this.postTimestamp : -date.getTime(),
-                        lock: this.lock,
-                        // password: this.passwordInput
-                        userId: this.ub_user.id,
-                        userName: this.ub_user.name,
-                        tags: selectedTags,
-                        fingerPrint: this.ub_fingerPrint
-                    };
-                    updates['/posts/' + postKey] = {
-                        title: title,
-                        timestamp: this.isEditmode? this.postTimestamp : -date.getTime(),
-                        lock: this.lock,
-                        userId: this.ub_user.id,
-                        userName: this.ub_user.name,
-                        tags: selectedTags
-                    };
-                    this.submitting = true;
-                    window.$('#summernote').summernote('disable');
-                    await db.db.ref().update(updates);
-                    window.$("#registerPassword").modal('hide');
-                    router.push({name: 'Viewer', query: {postId: postKey}})
-                } catch (e) {
-                    console.log(e);
-                    alert(e);
-                    window.$("#registerPassword").modal('hide');
+                var tags = [{
+                    id: window.$(element).find("select.box-component").val(),
+                    name: window.$(element).find("select.box-component option:checked").text()
+                }]
+                var titleInput = window.$(element).find("input.box-component").val();
+                var title = titleInput? titleInput : date.toLocaleString() + '에 저장된 박스입니다.'
+                window.$(element).find("input.box-component").replaceWith('<span class="box-component" tagid="'+tags[0].id+'" style="font-size: large; color: orange"><b>#'+tags[0].name+'</b></span>');
+                window.$(element).find("select.box-component").replaceWith('<h3 class="box-component">' + title + '</h3>');
+                
+                var contents = window.$(element).html();
+                var timestamp = isNewBox? -date.getTime() : Number(window.$(element).attr("timestamp"));
+                var lock = boxLock;
+                var userId = boxUserInfo.id;
+                var userName = boxUserInfo.name;
+                var fingerPrint = boxFingerPrint;
+
+                updates['/postsWithContents/' + boxKey] = {
+                    title: title,
+                    contents: contents,
+                    timestamp: timestamp,
+                    lock: lock,
+                    userId: userId,
+                    userName: userName,
+                    tags: tags,
+                    fingerPrint: fingerPrint,
+                    parent: postKey
+                };
+                updates['/posts/' + boxKey] = {
+                    title: title,
+                    timestamp: timestamp,
+                    lock: lock,
+                    userId: userId,
+                    userName: userName,
+                    tags: tags,
+                    parent: postKey
+                };
+
+                children[boxKey] = title;
+            })
+            
+            for(var key in children) {
+                delete this.postChildren[key];
+            }
+            for(var ley in this.postChildren) {
+                updates['/postsWithContents/' + ley] = null;
+                updates['/posts/' + ley] = null;
+            }
+
+            var title = this.postTitle == '' ? date.toLocaleString() + '에 저장된 글입니다.' : this.postTitle;
+            var contents = window.$(".note-editable").html();
+            var selectedTags = {}
+            var i=0, k=0;
+            for(var mey in this.tags) {
+                if(this.tags[mey]){
+                    selectedTags[k++] = {id: mey, name: this.ub_tags[i].name}
                 }
-            // }
-            // else{
-            //     alert("삭제 비밀번호 설정은 필수입니다!")
-            // }
+                i++;
+            }
+
+            try {
+                updates['/postsWithContents/' + postKey] = {
+                    title: title,
+                    contents: contents,
+                    timestamp: this.isEditmode? this.postTimestamp : -date.getTime(),
+                    lock: this.lock,
+                    userId: this.ub_user.id,
+                    userName: this.ub_user.name,
+                    tags: selectedTags,
+                    fingerPrint: this.ub_fingerPrint,
+                    children: this.children
+                };
+                updates['/posts/' + postKey] = {
+                    title: title,
+                    timestamp: this.isEditmode? this.postTimestamp : -date.getTime(),
+                    lock: this.lock,
+                    userId: this.ub_user.id,
+                    userName: this.ub_user.name,
+                    tags: selectedTags,
+                    children: this.children
+                };
+                this.submitting = true;
+                window.$('#summernote').summernote('disable');
+                await db.db.ref().update(updates);
+                window.$("#registerPassword").modal('hide');
+                router.push({name: 'Viewer', query: {postId: postKey}})
+            } catch (e) {
+                console.log(e);
+                alert(e);
+                window.$("#registerPassword").modal('hide');
+            }
         },
         cancelPost() {
             router.push("List");

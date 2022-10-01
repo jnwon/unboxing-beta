@@ -25,6 +25,7 @@
                     <i v-else class="far fa-star" v-tooltip="'준비중입니다!'" style="margin-left: 20%;"/>
                 </div>
                 <br/>
+                <div class="parent-contents" style="display:none" v-html="parentContents"></div>
         </div>
         <div class="col-sm-2"></div>
         <p></p>
@@ -67,7 +68,10 @@ export default {
             postUserName: '',
             postUserId: '',
             postTags: {},
-            postFingerPrint: ''
+            postFingerPrint: '',
+            parent: null,
+            children: {},
+            parentContents: ''
         }
     },
     created(){
@@ -94,6 +98,8 @@ export default {
                 tags = snapshot.val().tags;
                 // this.password = snapshot.val().password;
                 this.postFingerPrint = snapshot.val().fingerPrint;
+                this.parent = snapshot.val().parent;
+                this.children = snapshot.val().children;
             })
             if(this.lock && this.postFingerPrint != this.ub_fingerPrint){
                 alert("비밀글입니다.");
@@ -130,7 +136,12 @@ export default {
             router.push('List');
         },
         editPost() {
-            router.push({name: 'Editor', query: {postId: this.$route.query.postId}});
+            if(this.parent){
+                alert('박스 글의 개별 수정은 현재 불가능합니다.\n부모 포스트의 수정을 통해 박스 내용을 수정해주세요.')
+            }
+            else {
+                router.push({name: 'Editor', query: {postId: this.$route.query.postId}});
+            }
         },
         deletePost() {
             window.$("#deleteConfirm").modal('show');
@@ -139,6 +150,21 @@ export default {
             // if(this.passwordInput == this.password){
             if(confirm('정말로 삭제할까요?')){
                 var updates = {};
+                if(this.children){
+                    for(var key in this.children){
+                        updates['/postsWithContents/' + key] = null;
+                        updates['/posts/' + key] = null;
+                    }
+                }
+                if(this.parent){
+                    await db.db.ref('postsWithContents/' + this.parent + '/contents').get().then((snapshot) => {
+                        this.parentContents = snapshot.val();
+                    })
+                    window.$('.parent-contents').find('#'+this.$route.query.postId).remove();
+                    updates['/postsWithContents/' + this.parent + '/contents'] = window.$('.parent-contents').html();
+                    updates['/postsWithContents/' + this.parent + '/children/' + this.$route.query.postId] = null;
+                    updates['/posts/' + this.parent + '/children/' + this.$route.query.postId] = null;
+                }
                 updates['/postsWithContents/' + this.$route.query.postId] = null;
                 updates['/posts/' + this.$route.query.postId] = null;
                 try{

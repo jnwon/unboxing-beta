@@ -26,7 +26,7 @@
                 <div class="col-sm-3"></div>
                 <div class="col-sm-6">
                     <div class="input-group">
-                        <input id="keyInput" type="text" class="form-control" v-model="keyInput" @keydown.enter="recoverAccount()">
+                        <input id="keyInputText" type="text" class="form-control" v-model="keyInput" @keydown.enter="recoverAccount()">
                         <div class="input-group-btn">
                           <button class="btn btn-default">
                             <i @click="recoverAccount()" class="fa fa-check"/>
@@ -152,12 +152,12 @@
       },
       async recoverAccount() {
         if(!this.keyInput){
-          window.$('#keyInput').focus();
-          window.$('#keyInput').animate({left: 0}, 'fast', function() {window.$('#keyInput').blur();})
-          window.$('#keyInput').animate({left: 0}, 'fast', function() {window.$('#keyInput').focus();})
-          window.$('#keyInput').animate({left: 0}, 'fast', function() {window.$('#keyInput').blur();})
-          window.$('#keyInput').animate({left: 0}, 'fast', function() {window.$('#keyInput').focus();})
-          window.$('#keyInput').animate({left: 0}, 'fast', function() {window.$('#keyInput').blur();})
+          window.$('#keyInputText').focus();
+          window.$('#keyInputText').animate({left: 0}, 'fast', function() {window.$('#keyInputText').blur();})
+          window.$('#keyInputText').animate({left: 0}, 'fast', function() {window.$('#keyInputText').focus();})
+          window.$('#keyInputText').animate({left: 0}, 'fast', function() {window.$('#keyInputText').blur();})
+          window.$('#keyInputText').animate({left: 0}, 'fast', function() {window.$('#keyInputText').focus();})
+          window.$('#keyInputText').animate({left: 0}, 'fast', function() {window.$('#keyInputText').blur();})
         }
         else{
           var userListRef = db.db.ref('users');
