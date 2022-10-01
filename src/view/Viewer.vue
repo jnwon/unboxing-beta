@@ -7,7 +7,7 @@
                     <h3 style="text-align: left;">{{postTitle}}&nbsp;<span v-if="lock" style="color: green; font-size: medium;"><i class="fa fa-lock" style="position: relative; bottom: 2px"/></span></h3>
                     <div style="display: flex; justify-content: space-between;">
                         <span style="font-size:small; color:grey">{{postDateTime}}</span>
-                        <span style="font-size:small; color:grey">{{postUserName}}</span>
+                        <span style="font-size:small; color:grey">{{postUserName}}({{postUserId}})</span>
                     </div>
                     <br/>
                     <div v-html="postContents"></div>
@@ -64,6 +64,7 @@ export default {
             postContents: '',
             postDateTime: '',
             postUserName: '',
+            postUserId: '',
             postTags: {},
             postFingerPrint: ''
         }
@@ -78,6 +79,7 @@ export default {
         var contents;
         var datetime;
         var userName;
+        var userIdDisplay;
         var tags;
         const postRef = db.db.ref('postsWithContents/'+this.$route.query.postId);
         try{
@@ -87,6 +89,7 @@ export default {
                 contents = snapshot.val().contents;
                 datetime = new Date(-snapshot.val().timestamp).toLocaleString();
                 userName = snapshot.val().userName;
+                userIdDisplay = snapshot.val().userId.slice(snapshot.val().userId.length-4);
                 tags = snapshot.val().tags;
                 // this.password = snapshot.val().password;
                 this.postFingerPrint = snapshot.val().fingerPrint;
@@ -100,6 +103,7 @@ export default {
                 this.postContents = contents;
                 this.postDateTime = datetime;
                 this.postUserName = userName;
+                this.postUserId = userIdDisplay;
                 this.postTags = tags;
                 
                 if(this.postTags && this.ub_tags){

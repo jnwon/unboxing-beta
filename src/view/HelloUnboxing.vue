@@ -63,14 +63,32 @@
       }
     },
     computed: {
-      ...mapState(['ub_user', 'ub_fingerPrint'])
+      ...mapState(['ub_user', 'ub_tags', 'ub_fingerPrint'])
     },
-    mounted() {
+    async mounted() {
       if(!this.ub_user){
         window.$('.container').animate({opacity: 0}, 'slow');
         window.$('.container').animate({opacity: 1}, 'slow');
       }
       else{
+        try {
+          var userId = this.ub_user.id;
+          var tutorial = this.ub_user.tutorial;
+          await db.db.ref('users/' + userId).get().then((snapshot) => {
+            console.log(snapshot.val().name);
+            this.setUserInfo({id: userId, name: snapshot.val().name, tutorial: tutorial})
+          })
+          var tags = [];
+          await db.db.ref('users/' + userId + '/tags').get().then((snapshot) => {
+            snapshot.forEach((data) => {
+              tags.push({id: data.key, name: data.val().name});
+            })
+            this.setTags(tags);
+          });
+        } catch(e) {
+          console.log(e);
+          alert(e);
+        }
         location.href="/list";
       }
     },
