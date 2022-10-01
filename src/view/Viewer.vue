@@ -5,6 +5,10 @@
                 <div class="row" style="height: auto; min-height: 85%;">
                     <h3 v-if="postTitle == ''"><i class="fa fa-spinner fa-spin"/></h3>
                     <h3 style="text-align: left;">{{postTitle}}&nbsp;<span v-if="lock" style="color: green; font-size: medium;"><i class="fa fa-lock" style="position: relative; bottom: 2px"/></span></h3>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="font-size:small; color:grey">{{postDateTime}}</span>
+                        <span style="font-size:small; color:grey">{{postUserName}}</span>
+                    </div>
                     <br/>
                     <div v-html="postContents"></div>
                     <br/>
@@ -15,6 +19,7 @@
                 <br/>
                 <div v-if="postTitle" class="row">
                     <i class="fa fa-arrow-left" @click="moveToList()" style="margin-right: 20%;"/>
+                    <i v-if="postFingerPrint == this.ub_fingerPrint" class="fa fa-edit" @click="editPost()"/>
                     <i v-if="postFingerPrint == this.ub_fingerPrint" class="fa fa-trash" @click="deleteOk()" style="margin-left: 20%;"/>
                     <i v-else class="far fa-star" v-tooltip="'준비중입니다!'" style="margin-left: 20%;"/>
                 </div>
@@ -57,18 +62,22 @@ export default {
             lock: false,
             postTitle: '',
             postContents: '',
+            postDateTime: '',
+            postUserName: '',
             postTags: {},
             postFingerPrint: ''
         }
     },
     created(){
-        if(!this.ub_user){
-            location.href="/";
-        }
+        // if(!this.ub_user){
+        //     location.href="/";
+        // }
     },
     async mounted() {
         var title;
         var contents;
+        var datetime;
+        var userName;
         var tags;
         const postRef = db.db.ref('postsWithContents/'+this.$route.query.postId);
         try{
@@ -76,6 +85,8 @@ export default {
                 this.lock = snapshot.val().lock;
                 title = snapshot.val().title;
                 contents = snapshot.val().contents;
+                datetime = new Date(-snapshot.val().timestamp).toLocaleString();
+                userName = snapshot.val().userName;
                 tags = snapshot.val().tags;
                 // this.password = snapshot.val().password;
                 this.postFingerPrint = snapshot.val().fingerPrint;
@@ -87,8 +98,19 @@ export default {
             else{
                 this.postTitle = title;
                 this.postContents = contents;
+                this.postDateTime = datetime;
+                this.postUserName = userName;
                 this.postTags = tags;
-                console.log(this.postTags);
+                
+                if(this.postTags && this.ub_tags){
+                    this.postTags.forEach((tag) => {
+                        this.ub_tags.forEach((t) => {
+                            if(t.id == tag.id){
+                                tag.name = t.name;
+                            }
+                        })
+                    })
+                }
             }
         } catch (e) {
             console.log(e);
@@ -96,7 +118,7 @@ export default {
         }
     },
     computed: {
-        ...mapState(['ub_fingerPrint', 'ub_user'])
+        ...mapState(['ub_fingerPrint', 'ub_user', 'ub_tags'])
     },
     methods: {
         moveToList() {

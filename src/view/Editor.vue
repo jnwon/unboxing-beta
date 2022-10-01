@@ -128,11 +128,13 @@ export default {
                 onImageUpload: async function(files) {
                     for(var i=0; i < files.length; i++){
                         var ref = db.storage.ref().child(new Date().getTime()+'_'+files[i].name);
+                        window.$('#summernote').summernote('disable');
                         await ref.put(files[i]).then(() => {
                             ref.getDownloadURL().then(async (url) => {
                                 await window.$('#summernote').summernote('insertImage', url, function ($image) {
-                                    $image.css('max-width', '800px')
+                                    $image.css('max-width', '100%')
                                 });
+                                window.$('#summernote').summernote('enable');
                                 window.$('#summernote').summernote('pasteHTML', '<p style="text-align: left;"><br/></p>');
                             })
                         })
@@ -140,6 +142,20 @@ export default {
                 }
             }
         });
+
+        // function isMobile() {
+        //     var user = navigator.userAgent;
+        //     var is_mobile = false;
+
+        //     if( user.indexOf("iPhone") > -1 
+        //         || user.indexOf("Android") > -1 
+        //         || user.indexOf("iPad") > -1
+        //         || user.indexOf("iPod") > -1
+        //     ) {
+        //         is_mobile = true; 
+        //     }
+        //     return is_mobile;
+        // }
 
         window.$('#summernote').summernote('justifyLeft');
         // window.$('#summernote').summernote('editor.pasteHTML', postMetadata);
