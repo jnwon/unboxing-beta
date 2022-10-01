@@ -50,17 +50,15 @@ export default {
     name: 'view-Editor',
     data() {
         return {
+            isEditmode : false,
             submitting : false,
             // passwordInput : '',
             tags : [],
+            postTags : [],
             lock : false,
             postTitle : '',
+            postTimestamp : 0,
             categorySelect : '',
-            postMetadataFront : '<div class="post-component" style="text-align: left;"><select class="post-component">',
-            postMetadataRear : '</select>'
-                                    +'&nbsp;&nbsp;'
-                                    +'<input class="post-component" type="text" placeholder="포스트 제목을 입력하세요">'
-                                +'</div><br/>',
             boxTemplateFront : '<div class="box-component" style="text-align: left;">'
                                 +'<blockquote>'
                                     +'<select class="box-component">',
@@ -83,7 +81,6 @@ export default {
             this.categorySelect += '<option>' + tag.name + '</option>'
         })
 
-        // var postMetadata = this.postMetadataFront + this.categorySelect + this.postMetadataRear;
         var boxTemplate = this.boxTemplateFront + this.categorySelect + this.boxTemplateRear;
 
         function BoxButton(context) {
@@ -143,6 +140,8 @@ export default {
             }
         });
 
+        window.$('#summernote').summernote('justifyLeft');
+
         // function isMobile() {
         //     var user = navigator.userAgent;
         //     var is_mobile = false;
@@ -157,8 +156,43 @@ export default {
         //     return is_mobile;
         // }
 
-        window.$('#summernote').summernote('justifyLeft');
-        // window.$('#summernote').summernote('editor.pasteHTML', postMetadata);
+        if(this.$route.query.postId){
+            this.isEditmode = true;
+
+            var title;
+            var contents;
+            var fingerPrint;
+            const postRef = db.db.ref('postsWithContents/'+this.$route.query.postId);
+            try{
+                await postRef.get().then((snapshot) => {
+                    this.lock = snapshot.val().lock;
+                    title = snapshot.val().title;
+                    contents = snapshot.val().contents;
+                    fingerPrint = snapshot.val().fingerPrint;
+                    this.postTimestamp = snapshot.val().timestamp;
+                    if(snapshot.val().tags){
+                        this.postTags = snapshot.val().tags;
+                    }
+                })
+                if(fingerPrint != this.ub_fingerPrint){
+                    alert("포스트 작성자만 수정할 수 있습니다.");
+                    this.cancelPost();
+                }
+                else{
+                    this.postTitle = title;
+                    if(this.postTags.length > 0) {
+                        this.postTags.forEach((tag) => {
+                            this.tags[tag.id] = true;
+                        })
+                    }
+                    window.$('#summernote').summernote('pasteHTML', contents);
+                }
+            } catch (e) {
+                console.log(e);
+                alert(e);
+            }
+            
+        }
     },
     computed: {
         ...mapState(['ub_user', 'ub_tags', 'ub_fingerPrint'])
@@ -194,13 +228,13 @@ export default {
 
                 var postListRef = db.db.ref('posts');
                 var newPostRef = postListRef.push();
-                var newPostKey = newPostRef.key;
+                var postKey = this.isEditmode? this.$route.query.postId : newPostRef.key;
                 var updates = {};
                 try {
-                    updates['/postsWithContents/' + newPostKey] = {
+                    updates['/postsWithContents/' + postKey] = {
                         title: title,
                         contents: contents,
-                        timestamp: -date.getTime(),
+                        timestamp: this.isEditmode? this.postTimestamp : -date.getTime(),
                         lock: this.lock,
                         // password: this.passwordInput
                         userId: this.ub_user.id,
@@ -208,9 +242,9 @@ export default {
                         tags: selectedTags,
                         fingerPrint: this.ub_fingerPrint
                     };
-                    updates['/posts/' + newPostKey] = {
+                    updates['/posts/' + postKey] = {
                         title: title,
-                        timestamp: -date.getTime(),
+                        timestamp: this.isEditmode? this.postTimestamp : -date.getTime(),
                         lock: this.lock,
                         userId: this.ub_user.id,
                         userName: this.ub_user.name,
@@ -220,7 +254,7 @@ export default {
                     window.$('#summernote').summernote('disable');
                     await db.db.ref().update(updates);
                     window.$("#registerPassword").modal('hide');
-                    router.push({name: 'Viewer', query: {postId: newPostKey}})
+                    router.push({name: 'Viewer', query: {postId: postKey}})
                 } catch (e) {
                     console.log(e);
                     alert(e);

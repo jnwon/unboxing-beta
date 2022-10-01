@@ -19,7 +19,7 @@
                 
                 <div v-if="!fetching">
                     <div style="text-align: justify; padding: 10px">
-                        <span style="color:lightgrey; margin-right: 20px"><i class="fa fa-star" v-tooltip="'준비중입니다!'"/></span><span v-if="this.ub_user" @click="toggleListMode()"><b>{{myList? 'ALL' : 'MY'}}</b></span>
+                        <span style="color:lightgrey; margin-right: 20px"><i class="fa fa-star" v-tooltip="'준비중입니다!'"/></span><span v-if="this.ub_user" style="margin-right: 20px" @click="toggleListMode()"><b>{{myList? 'ALL' : 'MY'}}</b></span><span @click="toggleListType()"><i :class="listView? 'fa fa-list' : 'fa fa-newspaper'"/></span>
                         <i @click="fetchNext()" class="fa fa-plus" style="position:absolute; right: 48%"/>
                         <i @click="moveToEditor()" class="fa fa-pen" style="position:absolute; right: 5%"/>
                     </div>
@@ -54,6 +54,7 @@ export default {
         return {
             fetching : true,
             myList : false,
+            listView : true,
             editTag : false,
             currentTimestamp : 0,
             lastTimestamp : 0,
@@ -89,7 +90,7 @@ export default {
         moveToEditor() {
             router.push('Editor');
         },
-        async toggleListMode(){
+        async toggleListMode() {
             this.myList = !this.myList;
             if(this.myList){
                 this.fetchMy();
@@ -97,6 +98,9 @@ export default {
             else{
                 this.fetchAll();
             }
+        },
+        toggleListType() {
+            this.listView = !this.listView;
         },
         toggleTag(tagId) {
             this.tags[tagId] = !this.tags[tagId];

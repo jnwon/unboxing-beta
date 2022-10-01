@@ -14,6 +14,7 @@
                     <br/>
                     <div style="text-align: left">
                         <span v-for="(tag, index) in this.postTags" :key="index" style="margin-right: 15px; font-size: large; color: orange"><b>#{{tag.name}}</b></span>
+                        <a href="#" style="position:absolute; right: 5%"><i class="fa fa-angle-up"/></a>
                     </div>
                 </div>
                 <br/>
@@ -127,6 +128,9 @@ export default {
     methods: {
         moveToList() {
             router.push('List');
+        },
+        editPost() {
+            router.push({name: 'Editor', query: {postId: this.$route.query.postId}});
         },
         deletePost() {
             window.$("#deleteConfirm").modal('show');
