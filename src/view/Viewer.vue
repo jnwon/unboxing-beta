@@ -10,6 +10,7 @@
                         <span style="font-size:small; color:grey">{{postUserName}}({{postUserId}})</span>
                     </div>
                     <br/>
+                    <div class="alert alert-warning" v-if="parent" style="text-align:left; height: 55px;"><span style="font-size:x-large; margin-left: 10px;">⌜ </span><a :href="'/viewer?postId='+parent" style="color:#8a6d3b; font-size:medium; position:relative; bottom: 8px;">{{parentTitle}}</a></div>
                     <div v-html="postContents"></div>
                     <br/>
                     <div style="text-align: left">
@@ -71,13 +72,11 @@ export default {
             postFingerPrint: '',
             parent: null,
             children: {},
+            parentTitle : '',
             parentContents: ''
         }
     },
     created(){
-        // if(!this.ub_user){
-        //     location.href="/";
-        // }
     },
     async mounted() {
         var title;
@@ -122,6 +121,10 @@ export default {
                         })
                     })
                 }
+                
+                db.db.ref('posts/' + this.parent + '/title').get().then((snapshot) => {
+                    this.parentTitle = snapshot.val();
+                })
             }
         } catch (e) {
             console.log(e);
