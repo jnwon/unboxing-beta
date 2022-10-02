@@ -127,6 +127,7 @@ export default {
                 })
 
                 if(this.ub_user && this.ub_user.tutorial == 3){
+                    window.$("#contentsArea").tooltip('destroy');
                     setTimeout(() => {window.$(".fa-arrow-left").tooltip('show');}, 500)
                 }
                 else if(this.ub_user && this.ub_user.tutorial == 5) {
