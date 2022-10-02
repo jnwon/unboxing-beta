@@ -349,6 +349,10 @@ export default {
                     this.setTutorialStep(3);
                 }
                 window.$("#registerPassword").modal('hide');
+                if(!this.isEditmode){
+                    sessionStorage.removeItem('lastTimestamp');
+                    sessionStorage.removeItem('myNextIndex');
+                }
                 router.push({name: 'Viewer', query: {postId: postKey}})
             } catch (e) {
                 console.log(e);

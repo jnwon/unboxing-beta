@@ -155,7 +155,7 @@ export default {
             if(this.ub_user && this.ub_user.tutorial == 3){
                 this.setTutorialStep(4);
             }
-            router.push('List');
+            router.push({name: 'List', query: {postId: this.$route.query.postId}});
         },
         editPost() {
             if(this.parent){

@@ -7,7 +7,7 @@
             <div class="col-sm-2"></div>
             <div class="col-sm-8">
                 <div class="list-group" v-popover:bottom="'태그에 해당하는 박스만 따로 검색되어 나왔어요! 한번 열람해볼까요?'">
-                    <a v-for="(post, index) in postData" :key="index" @click="moveToViewer(post.postId)" href="#" class="list-group-item" style="display: flex; justify-content: space-between;">
+                    <a v-for="(post, index) in postData" :key="index" @click="moveToViewer(post.postId)" :id="post.postId" href="#" class="list-group-item" style="display: flex; justify-content: space-between;">
                         <div style="max-width: 50%; text-align: left;">
                             <span>{{post.title}}&nbsp;<i v-if="post.lock" class="fa fa-lock" style="color: green; font-size: smaller;"/></span>
                         </div>
@@ -67,14 +67,56 @@ export default {
             filters: []
         }
     },
+    watch: {
+        myList: function (val) {
+            sessionStorage.setItem('myList', val);
+        },
+        lastTimestamp: function (val) {
+            sessionStorage.setItem('lastTimestamp', val);
+        },
+        myNextIndex: function (val) {
+            sessionStorage.setItem('myNextIndex', val);
+        },
+        filters: {
+            handler(val) {
+                var filters = {}
+                for(var key in val) {
+                    filters[key] = val[key]
+                }
+                sessionStorage.setItem('filters', JSON.stringify(filters));
+            },
+            deep: true
+        }
+    },
     async mounted() {
+        history.replaceState({}, null, location.pathname);
+
         if(this.ub_user){
             this.ub_tags.forEach((tag) => {
                 this.tags[tag.id] = 0;
             })
         }
 
-        await this.fetchAll();
+        this.myList = sessionStorage.getItem('myList') == "true" ? true : false;
+        var filtersObjStr = sessionStorage.getItem('filters');
+        if(filtersObjStr){
+            var filtersObj = JSON.parse(filtersObjStr)
+            for(var key in filtersObj){
+                this.tags[filtersObj[key]] = true;
+                this.filters.push(filtersObj[key])
+            }
+        }
+
+        if(this.myList){
+            await this.fetchMy();
+        }
+        else{
+            await this.fetchAll();
+        }
+
+        if(this.$route.query.postId){
+            window.$("#"+this.$route.query.postId).focus();
+        }
 
         if(this.ub_user && this.ub_user.tutorial == 1){
             setTimeout(() => {window.$(".fa-pen").tooltip('show');}, 500)
@@ -204,11 +246,11 @@ export default {
             this.fetching = true;
             this.postData = [];
             this.currentTimestamp = new Date().getTime();
-            const postListRef = db.db.ref('posts').limitToFirst(10);
+            const postListRef = this.$route.query.postId && sessionStorage.getItem('lastTimestamp')? db.db.ref('posts').orderByChild('timestamp').endAt(Number(sessionStorage.getItem('lastTimestamp'))) : db.db.ref('posts').orderByChild('timestamp').limitToFirst(10);
             var timestamp;
             var timeoffset;
             try{
-                await postListRef.orderByChild('timestamp').on("value", (snapshot) => {
+                await postListRef.on("value", (snapshot) => {
                     snapshot.forEach((data) => {
                         timestamp = data.val().timestamp;
                         timeoffset = this.currentTimestamp + timestamp;
@@ -286,8 +328,14 @@ export default {
                         }
                     })
                     var myDataLen = this.MyData.length;
-                    for(var i=myDataLen-1; i >= (myDataLen -10 >=0? myDataLen -10 : 0); i--){
-                        this.postData.push(this.MyData[i]);
+                    if(this.$route.query.postId && sessionStorage.getItem('myNextIndex')){
+                        for(var i=myDataLen-1; i > Number(sessionStorage.getItem('myNextIndex')); i--){
+                            this.postData.push(this.MyData[i]);
+                        }
+                    } else {
+                        for(i=myDataLen-1; i >= (myDataLen -10 >=0? myDataLen -10 : 0); i--){
+                            this.postData.push(this.MyData[i]);
+                        }
                     }
                     this.myNextIndex = i;
                 })
