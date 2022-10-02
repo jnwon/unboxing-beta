@@ -231,7 +231,7 @@ export default {
                 }
                 this.myNextIndex = i;
             }
-            else{
+            else if(!this.myList){
                 const postListRef = db.db.ref('posts').limitToFirst(10);
                 var timestamp;
                 var timeoffset;
