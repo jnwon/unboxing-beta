@@ -6,7 +6,7 @@
         <div class="row">
             <div class="col-sm-2"></div>
             <div class="col-sm-8">
-                <div class="list-group">
+                <div class="list-group" v-popover:bottom="'태그에 해당하는 박스만 따로 검색되어 나왔어요! 한번 열람해볼까요?'">
                     <a v-for="(post, index) in postData" :key="index" @click="moveToViewer(post.postId)" href="#" class="list-group-item" style="display: flex; justify-content: space-between;">
                         <div style="max-width: 50%; text-align: left;">
                             <span>{{post.title}}&nbsp;<i v-if="post.lock" class="fa fa-lock" style="color: green; font-size: smaller;"/></span>
@@ -17,14 +17,14 @@
                     </a>
                 </div>
                 
-                <div v-if="!fetching">
+                <div v-show="!fetching">
                     <div style="text-align: justify; padding: 10px">
-                        <span style="color:lightgrey; margin-right: 20px"><i class="fa fa-star" v-tooltip="'준비중입니다!'"/></span><span v-if="this.ub_user" style="margin-right: 20px" @click="toggleListMode()"><b>{{myList? 'ALL' : 'MY'}}</b></span><span @click="toggleListType()"><i :class="listView? 'fa fa-list' : 'fa fa-newspaper'"/></span>
+                        <span style="color:lightgrey; margin-right: 20px"><i class="fa fa-star" v-tooltip="'준비중입니다!'"/></span><span v-if="this.ub_user" style="margin-right: 20px" @click="toggleListMode()" id="myBtn" v-popover:top="'내 게시물 보기를 눌러서 태그 선택화면을 꺼내보세요.'"><b>{{myList? 'ALL' : 'MY'}}</b></span><span @click="toggleListType()"><i :class="listView? 'fa fa-list' : 'fa fa-newspaper'"/></span>
                         <i @click="fetchNext()" class="fa fa-plus" style="position:absolute; right: 48%"/>
-                        <i @click="moveToEditor()" class="fa fa-pen" style="position:absolute; right: 5%"/>
+                        <i @click="moveToEditor()" class="fa fa-pen" style="position:absolute; right: 5%" v-popover:top="'포스트 하나 작성해볼까요?'"/>
                     </div>
                     <div v-show="myList && !editTag" style="text-align:left; margin-left: 10px">
-                        <span v-for="(ub_tag, index) in this.ub_tags" :key="index" :style="'margin-right: 15px; font-size: large;' + (tags[ub_tag.id]? 'color: orange' : 'color: lightgrey')" @click="toggleTag(ub_tag.id)"><b>#{{ub_tag.name}}</b></span>
+                        <span id="tagList" v-popover:top="'작성한 박스에 설정한 태그를 눌러 게시물 목록에 박스 게시물이 잘 나오는지 확인해보세요!'" v-for="(ub_tag, index) in this.ub_tags" :key="index" :style="'margin-right: 15px; font-size: large;' + (tags[ub_tag.id]? 'color: orange' : 'color: lightgrey')" @click="toggleTag(ub_tag.id)"><b>#{{ub_tag.name}}</b></span>
                         <i class="fa fa-edit" @click="editTags()"></i>
                     </div>
                     <div v-show="editTag" style="text-align:left; margin-left: 10px">
@@ -71,23 +71,45 @@ export default {
         if(this.ub_user){
             this.ub_tags.forEach((tag) => {
                 this.tags[tag.id] = 0;
-                // this.tagsEditing[index].removed = false;
             })
         }
+
         await this.fetchAll();
+
+        if(this.ub_user && this.ub_user.tutorial == 1){
+            setTimeout(() => {window.$(".fa-pen").tooltip('show');}, 500)
+        }
+        else{
+            window.$(".fa-pen").tooltip('destroy');
+        }
+
+        if(this.ub_user && this.ub_user.tutorial == 4){
+            setTimeout(() => {window.$("#myBtn").tooltip('show');}, 500)
+        }
+        else{
+            window.$("#myBtn").tooltip('destroy');
+            window.$("#tagList").tooltip('destroy');
+            window.$(".list-group").tooltip('destroy');
+        }
     },
     computed: {
         ...mapState(['ub_user', 'ub_tags'])
     },
     methods: {
-        ...mapMutations(['setTags']),
+        ...mapMutations(['setTags', 'setTutorialStep']),
         reload() {
             location.reload();
         },
         moveToViewer(postId) {
+            if(this.ub_user && this.ub_user.tutorial == 4){
+                this.setTutorialStep(5);
+            }
             router.push({name: 'Viewer', query: {postId: postId}});
         },
         moveToEditor() {
+            if(this.ub_user && this.ub_user.tutorial == 1){
+                this.setTutorialStep(2);
+            }
             router.push('Editor');
         },
         async toggleListMode() {
@@ -97,6 +119,10 @@ export default {
             }
             else{
                 this.fetchAll();
+            }
+            if(this.ub_user && this.ub_user.tutorial == 4){
+                window.$("#myBtn").tooltip('destroy');
+                setTimeout(() => {window.$("#tagList").tooltip('show');}, 500)
             }
         },
         toggleListType() {
@@ -111,6 +137,10 @@ export default {
                 this.filters = this.filters.filter((e) => e != tagId);
             }
             this.fetchMy();
+            if(this.ub_user && this.ub_user.tutorial == 4){
+                window.$("#tagList").tooltip('destroy');
+                setTimeout(() => {window.$(".list-group").tooltip('show');}, 500)
+            }
         },
         editTags() {
             this.editTag = true;

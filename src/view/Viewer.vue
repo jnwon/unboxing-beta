@@ -11,7 +11,7 @@
                     </div>
                     <br/>
                     <div class="alert alert-warning" v-if="parent" style="text-align:left; height: 55px;"><span style="font-size:x-large; margin-left: 10px;">⌜ </span><a :href="'/viewer?postId='+parent" style="color:#8a6d3b; font-size:medium; position:relative; bottom: 8px;">{{parentTitle}}</a></div>
-                    <div v-html="postContents"></div>
+                    <div v-html="postContents" id="contentsArea" v-popover:top="'이렇게 박스만 따로 찾아서 열람할 수 있답니다. 앞으로 언박싱과 함께 즐거운 블로그생활 되세요 :)♥︎'"></div>
                     <br/>
                     <div style="text-align: left">
                         <span v-for="(tag, index) in this.postTags" :key="index" style="margin-right: 15px; font-size: large; color: orange"><b>#{{tag.name}}</b></span>
@@ -19,8 +19,8 @@
                     </div>
                 </div>
                 <br/>
-                <div v-if="postTitle" class="row">
-                    <i class="fa fa-arrow-left" @click="moveToList()" style="margin-right: 20%;"/>
+                <div v-show="postTitle" class="row">
+                    <i class="fa fa-arrow-left" @click="moveToList()" style="margin-right: 20%;" v-popover:top="'부모 포스트에는 포스트 내용과 박스의 내용이 함께 나와요. 이제 박스 태그가 제대로 붙었는지 확인하러 목록 화면으로 돌아가볼까요?'"/>
                     <i v-if="postFingerPrint == this.ub_fingerPrint" class="fa fa-edit" @click="editPost()"/>
                     <i v-if="postFingerPrint == this.ub_fingerPrint" class="fa fa-trash" @click="deleteOk()" style="margin-left: 20%;"/>
                     <i v-else class="far fa-star" v-tooltip="'준비중입니다!'" style="margin-left: 20%;"/>
@@ -54,7 +54,7 @@
 <script>
 import router from '@/router';
 import db from '@/db';
-import { mapState } from 'vuex';
+import { mapState, mapMutations } from 'vuex';
 
 export default {
     name: 'view-Viewer',
@@ -125,6 +125,20 @@ export default {
                 db.db.ref('posts/' + this.parent + '/title').get().then((snapshot) => {
                     this.parentTitle = snapshot.val();
                 })
+
+                if(this.ub_user && this.ub_user.tutorial == 3){
+                    setTimeout(() => {window.$(".fa-arrow-left").tooltip('show');}, 500)
+                }
+                else if(this.ub_user && this.ub_user.tutorial == 5) {
+                    setTimeout(() => {
+                        window.$("#contentsArea").tooltip('show');
+                        this.setTutorialStep(0);
+                    }, 500)
+                }
+                else{
+                    window.$(".fa-arrow-left").tooltip('destroy');
+                    window.$("#contentsArea").tooltip('destroy');
+                }
             }
         } catch (e) {
             console.log(e);
@@ -135,7 +149,11 @@ export default {
         ...mapState(['ub_fingerPrint', 'ub_user', 'ub_tags'])
     },
     methods: {
+        ...mapMutations(['setTutorialStep']),
         moveToList() {
+            if(this.ub_user && this.ub_user.tutorial == 3){
+                this.setTutorialStep(4);
+            }
             router.push('List');
         },
         editPost() {

@@ -12,10 +12,10 @@
             </div>
             <br/>
             <div class="row">
-                <div id="summernote"></div>
+                <div id="summernote" v-popover:top="'메뉴막대의 박스 아이콘을 눌러서 박스를 생성해보세요.'"></div>
                 <!-- <button @click="boxTravel()">each</button> -->
                 <i class="fa fa-arrow-left" @click="cancelPost()" style="margin-right: 20%;"/>
-                <i :class="submitting ? 'fa fa-spinner fa-spin' : 'fa fa-upload'" @click="submitPost()" style="margin-left: 20%;"/>
+                <i :class="submitting ? 'fa fa-spinner fa-spin' : 'fa fa-upload'" @click="submitPost()" style="margin-left: 20%;" v-popover:top="'이제 포스트를 발행해보세요!'"/>
                 <i :class="lock? 'fa fa-lock' : 'fa fa-unlock'" :style="'float: right; ' + (lock? 'color: green' : '')" @click="toggleLock()"/>
             </div>
         </div>
@@ -44,7 +44,7 @@
 <script>
 import router from "@/router";
 import db from '@/db';
-import { mapState } from "vuex";
+import { mapState, mapMutations } from "vuex";
 
 export default {
     name: 'view-Editor',
@@ -66,7 +66,11 @@ export default {
             boxTemplateRear : '</select>'
                                     +'<input class="box-component" type="text" placeholder="박스 제목을 입력하세요"><i class="fa fa-trash" style="margin-left: 15px"></i><p><br/></p><p><br/></p>'
                                 +'</blockquote>'
-                            +'</div><br/>'
+                            +'</div>',
+            boxTutorial : '<p style="color: orange; text-align: left"><b>박스는 포스트 속의 하위 포스트예요.<br/><br/>'
+                                +'부모 포스트의 내용에 함께 포함되어있지만, 박스 또한 개별적으로 열람 가능한 하나의 독립적인 포스트지요.<br/><br/>'
+                                +'설정해둔 박스 태그분류를 통해 박스끼리만 분류해서 모아서 볼 수도 있답니다 :D</b><br/></p>',
+            brTail : '<br/>'
         }
     },
     created(){
@@ -76,12 +80,19 @@ export default {
     },
     async mounted() {
 
+        if(this.ub_user.tutorial == 2){
+            window.$('#summernote').tooltip('show');
+        }
+        else{
+            window.$(".fa-upload").tooltip('destroy');
+        }
+
         this.ub_tags.forEach((tag) => {
             this.tags[tag.id] = 0;
             this.categorySelect += '<option value=' + tag.id + '>' + tag.name + '</option>'
         })
 
-        var boxTemplate = this.boxTemplateFront + this.categorySelect + this.boxTemplateRear;
+        var boxTemplate = this.boxTemplateFront + this.categorySelect + this.boxTemplateRear + (this.ub_user.tutorial == 2? this.boxTutorial : '') + this.brTail;
 
         function BoxButton(context) {
             var ui = window.$.summernote.ui;
@@ -93,9 +104,11 @@ export default {
                 click: function () {
                 // invoke insertText method with 'hello' on editor module.
                     context.invoke('editor.pasteHTML', boxTemplate);
+                    window.$('#summernote').tooltip('hide');
                     if(window.$('#summernote').summernote('editor.getLastRange').ec.parentElement.outerHTML.indexOf('note-editable') == -1){
                         window.$('#summernote').summernote('undo');
                     }
+                    setTimeout(() => {window.$(".fa-upload").tooltip('show');}, 1500)
                 }
             });
 
@@ -215,6 +228,7 @@ export default {
         ...mapState(['ub_user', 'ub_tags', 'ub_fingerPrint'])
     },
     methods: {
+        ...mapMutations(['setTutorialStep']),
         setPassword() {
             window.$("#registerPassword").modal('show');
         },
@@ -330,6 +344,9 @@ export default {
                 this.submitting = true;
                 window.$('#summernote').summernote('disable');
                 await db.db.ref().update(updates);
+                if(this.ub_user.tutorial == 2){
+                    this.setTutorialStep(3);
+                }
                 window.$("#registerPassword").modal('hide');
                 router.push({name: 'Viewer', query: {postId: postKey}})
             } catch (e) {

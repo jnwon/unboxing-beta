@@ -15,6 +15,16 @@ app.directive('tooltip', {
     }
 })
 
+app.directive('popover', {
+    mounted(el, binding) {
+        window.$(el).tooltip({
+            title: binding.value,
+            placement: binding.arg,
+            triger: 'manual'
+        })
+    }
+})
+
 app.use(router)
 app.use(store)
 app.mount('#app')
