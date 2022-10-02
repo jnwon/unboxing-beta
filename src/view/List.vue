@@ -24,8 +24,8 @@
                         <i @click="moveToEditor()" class="fa fa-pen" style="position:absolute; right: 5%" v-popover:top="'포스트 하나 작성해볼까요?'"/>
                     </div>
                     <div v-show="myList && !editTag" style="text-align:left; margin-left: 10px">
-                        <span id="tagList" v-popover:top="'작성한 박스에 설정한 태그를 눌러 게시물 목록에 박스 게시물이 잘 나오는지 확인해보세요!'" v-for="(ub_tag, index) in this.ub_tags" :key="index" :style="'margin-right: 15px; font-size: large;' + (tags[ub_tag.id]? 'color: orange' : 'color: lightgrey')" @click="toggleTag(ub_tag.id)"><b>#{{ub_tag.name}}</b></span>
-                        <i class="fa fa-edit" @click="editTags()"></i>
+                        <span v-for="(ub_tag, index) in this.ub_tags" :key="index" :style="'margin-right: 15px; font-size: large;' + (tags[ub_tag.id]? 'color: orange' : 'color: lightgrey')" @click="toggleTag(ub_tag.id)"><b>#{{ub_tag.name}}</b></span>
+                        <i class="fa fa-edit" @click="editTags()" id="tagList" v-popover:top="'작성한 박스에 설정한 태그를 눌러 게시물 목록에 박스 게시물이 잘 나오는지 확인해보세요!'"></i>
                     </div>
                     <div v-show="editTag" style="text-align:left; margin-left: 10px">
                         <span v-for="(tag, index) in this.tagsEditing" :key="index" style="margin-right: 15px"><input type="text" v-model="tag.name" style="width: 20%; margin-right: 5px; margin-bottom: 10px;"/><i class="fas fa-times-circle" @click="deleteTags(index, tag.id)"/></span>
