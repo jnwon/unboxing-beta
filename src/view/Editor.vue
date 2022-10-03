@@ -4,7 +4,7 @@
         <div class="col-sm-10">
             <div class="row">
                 <div class="col-sm-4">
-                    <input type="text" class="form-control" placeholder="포스트 제목을 입력하세요" v-model="postTitle">
+                    <input type="text" class="form-control" :placeholder="$t('placeholder-posttitle')" v-model="postTitle">
                 </div>
                 <div class="col-sm-8" style="text-align: left; padding-top:5px">
                     <span v-for="(ub_tag, index) in this.ub_tags" :key="index" :style="'margin-right: 15px; font-size: large;' + (tags[ub_tag.id]? 'color: orange' : 'color: lightgrey')" @click="toggleTag(ub_tag.id)"><b>#{{ub_tag.name}}</b></span>
@@ -12,10 +12,10 @@
             </div>
             <br/>
             <div class="row">
-                <div id="summernote" v-popover:top="'메뉴막대의 박스 아이콘을 눌러서 박스를 생성해보세요.'"></div>
+                <div id="summernote" v-popover:top="$t('tooltip-tutorial-2-1')"></div>
                 <!-- <button @click="boxTravel()">each</button> -->
                 <i class="fa fa-arrow-left" @click="cancelPost()" style="margin-right: 20%;"/>
-                <i :class="submitting ? 'fa fa-spinner fa-spin' : 'fa fa-upload'" @click="submitPost()" style="margin-left: 20%;" v-popover:top="'이제 포스트를 발행해보세요!'"/>
+                <i :class="submitting ? 'fa fa-spinner fa-spin' : 'fa fa-upload'" @click="submitPost()" style="margin-left: 20%;" v-popover:top="$t('tooltip-tutorial-2-2')"/>
                 <i :class="lock? 'fa fa-lock' : 'fa fa-unlock'" :style="'float: right; ' + (lock? 'color: green' : '')" @click="toggleLock()"/>
             </div>
         </div>
@@ -62,21 +62,18 @@ export default {
             categorySelect : '',
             boxTemplateFront : '<div class="box-component" style="text-align: left;">'
                                 +'<blockquote style="text-align: left;">'
-                                    +'<select class="box-component" style="margin-right: 5px">',
-            boxTemplateRear : '</select>'
-                                    +'<input class="box-component" type="text" placeholder="박스 제목을 입력하세요"><i class="fa fa-trash" style="margin-left: 15px"></i><p><br/></p><p><br/></p>'
-                                +'</blockquote>'
-                            +'</div>',
-            boxTutorial : '<p style="color: orange; text-align: left"><b>박스는 포스트 속의 하위 포스트예요.<br/><br/>'
-                                +'부모 포스트의 내용에 함께 포함되어있지만, 박스 또한 개별적으로 열람 가능한 하나의 독립적인 포스트지요.<br/><br/>'
-                                +'설정해둔 박스 태그분류를 통해 박스끼리만 분류해서 모아서 볼 수도 있답니다 :D<br/><br/>'
-                                +'한 포스트 안에 여러 개의 박스를 넣을수도 있어요!</b><br/></p>',
+                                    +'<select class="box-component" style="margin-right: 5px; margin-bottom: 10px">',
+            boxTemplateRear : '',
+            boxTutorial : '',
             brTail : '<br/>'
         }
     },
     created(){
         if(!this.ub_user){
             location.href="/";
+        }
+        if(navigator.language != 'ko'){
+            this.$i18n.locale = 'en'
         }
     },
     async mounted() {
@@ -93,7 +90,13 @@ export default {
             this.categorySelect += '<option value=' + tag.id + '>' + tag.name + '</option>'
         })
 
+        this.boxTemplateRear = this.$t('box-template-rear');
+        this.boxTutorial = this.$t('box-tutorial');
+
         var boxTemplate = this.boxTemplateFront + this.categorySelect + this.boxTemplateRear + (this.ub_user.tutorial == 2? this.boxTutorial : '') + this.brTail;
+
+        var lang = this.$t('summernote-lang');
+        var boxTooltip = this.$t('summernote-boxTooltip');
 
         function BoxButton(context) {
             var ui = window.$.summernote.ui;
@@ -101,7 +104,7 @@ export default {
             // create button
             var button = ui.button({
                 contents: '<i class="fas fa-box-open"/>',
-                tooltip: '박스 생성',
+                tooltip: boxTooltip,
                 click: function () {
                 // invoke insertText method with 'hello' on editor module.
                     context.invoke('editor.pasteHTML', boxTemplate);
@@ -117,7 +120,7 @@ export default {
         }
 
         window.$('#summernote').summernote({
-            lang: 'ko-KR',
+            lang: lang,
             height: window.innerHeight-300,
             blockquoteBreakingLevel: 0,
             toolbar: [
@@ -160,20 +163,6 @@ export default {
             window.$(this).closest('div.box-component').remove();
         })
 
-        // function isMobile() {
-        //     var user = navigator.userAgent;
-        //     var is_mobile = false;
-
-        //     if( user.indexOf("iPhone") > -1 
-        //         || user.indexOf("Android") > -1 
-        //         || user.indexOf("iPad") > -1
-        //         || user.indexOf("iPod") > -1
-        //     ) {
-        //         is_mobile = true; 
-        //     }
-        //     return is_mobile;
-        // }
-
         if(this.$route.query.postId){
             this.isEditmode = true;
 
@@ -196,7 +185,7 @@ export default {
                     }
                 })
                 if(fingerPrint != this.ub_fingerPrint){
-                    alert("포스트 작성자만 수정할 수 있습니다.");
+                    alert(this.$t('alert-forbiden'));
                     this.cancelPost();
                 }
                 else{
@@ -250,6 +239,7 @@ export default {
             var postListRef = db.db.ref('posts');
             var newPostRef = postListRef.push();
             var postKey = this.isEditmode? this.$route.query.postId : newPostRef.key;
+            var defaultBoxtitleTail = this.$t('default-boxtitle-tail');
 
             window.$("div.box-component").each(function(index, element){
                 window.$(element).find(".fa-trash").css("display", 'none');
@@ -267,7 +257,7 @@ export default {
                     name: window.$(element).find("select.box-component option:checked").text()
                 }]
                 var titleInput = window.$(element).find("input.box-component").val();
-                var title = titleInput? titleInput : date.toLocaleString() + '에 저장된 박스입니다.'
+                var title = titleInput? titleInput : date.toLocaleString() + defaultBoxtitleTail;
                 window.$(element).find("input.box-component").replaceWith('<span class="box-component" tagid="'+tags[0].id+'" style="font-size: large; color: orange"><b>#'+tags[0].name+'</b></span>');
                 window.$(element).find("select.box-component").replaceWith('<h3 class="box-component">' + title + '</h3>');
                 
@@ -310,7 +300,7 @@ export default {
                 updates['/posts/' + ley] = null;
             }
 
-            var title = this.postTitle == '' ? date.toLocaleString() + '에 저장된 글입니다.' : this.postTitle;
+            var title = this.postTitle == '' ? date.toLocaleString() + this.$t('default-posttitle-tail') : this.postTitle;
             var contents = window.$(".note-editable").html();
             var selectedTags = {}
             var i=0, k=0;

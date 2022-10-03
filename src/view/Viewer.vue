@@ -11,7 +11,7 @@
                     </div>
                     <br/>
                     <div class="alert alert-warning" v-if="parent" style="text-align:left; height: 55px;"><span style="font-size:x-large; margin-left: 10px;">⌜ </span><a :href="'/viewer?postId='+parent" style="color:#8a6d3b; font-size:medium; position:relative; bottom: 8px;">{{parentTitle}}</a></div>
-                    <div v-html="postContents" id="contentsArea" v-popover:top="'이렇게 박스만 따로 찾아서 열람할 수 있답니다. 앞으로 언박싱과 함께 즐거운 블로그생활 되세요 :)♥︎'"></div>
+                    <div v-html="postContents" id="contentsArea" v-popover:top="$t('tooltip-tutorial-5')"></div>
                     <br/>
                     <div style="text-align: left">
                         <span v-for="(tag, index) in this.postTags" :key="index" style="margin-right: 15px; font-size: large; color: orange"><b>#{{tag.name}}</b></span>
@@ -20,10 +20,10 @@
                 </div>
                 <br/>
                 <div v-show="postTitle" class="row">
-                    <i class="fa fa-arrow-left" @click="moveToList()" style="margin-right: 20%;" v-popover:top="'부모 포스트에는 포스트 내용과 박스의 내용이 함께 나와요. 이제 박스 태그가 제대로 붙었는지 확인하러 목록 화면으로 돌아가볼까요?'"/>
+                    <i class="fa fa-arrow-left" @click="moveToList()" style="margin-right: 20%;" v-popover:top="$t('tooltip-tutorial-3')"/>
                     <i v-if="postFingerPrint == this.ub_fingerPrint" class="fa fa-edit" @click="editPost()"/>
                     <i v-if="postFingerPrint == this.ub_fingerPrint" class="fa fa-trash" @click="deleteOk()" style="margin-left: 20%;"/>
-                    <i v-else class="far fa-star" v-tooltip="'준비중입니다!'" style="margin-left: 20%;"/>
+                    <i v-else class="far fa-star" v-tooltip="$t('tooltip-developing')" style="margin-left: 20%;"/>
                 </div>
                 <br/>
                 <div class="parent-contents" style="display:none" v-html="parentContents"></div>
@@ -77,6 +77,9 @@ export default {
         }
     },
     created(){
+        if(navigator.language != 'ko'){
+            this.$i18n.locale = 'en'
+        }
     },
     async mounted() {
         var title;
@@ -101,7 +104,7 @@ export default {
                 this.children = snapshot.val().children;
             })
             if(this.lock && this.postFingerPrint != this.ub_fingerPrint){
-                alert("비밀글입니다.");
+                alert(this.$t('alert-locked'));
                 this.moveToList();
             }
             else{
@@ -179,7 +182,7 @@ export default {
         },
         editPost() {
             if(this.parent){
-                alert('박스 글의 개별 수정은 현재 불가능합니다.\n부모 포스트의 수정을 통해 박스 내용을 수정해주세요.')
+                alert(this.$t('alert-editbox'))
             }
             else {
                 router.push({name: 'Editor', query: {postId: this.$route.query.postId}});
@@ -190,7 +193,7 @@ export default {
         },
         async deleteOk() {
             // if(this.passwordInput == this.password){
-            if(confirm('정말로 삭제할까요?')){
+            if(confirm(this.$t('confitm-delete'))){
                 var updates = {};
                 if(this.children){
                     for(var key in this.children){

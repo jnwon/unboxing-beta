@@ -2,7 +2,7 @@
     <div class="container" style="opacity: 0">
           <h2><i class="fas fa-box-open"/></h2>
           <div id="step1">
-            <h3>처음 오셨나요?<br/>사용하실 이름을 입력하세요.</h3>
+            <h3> {{ $t('welcome-1') }} <br/> {{ $t('welcome-2') }} </h3>
             <br/>
             <div class="row">
                 <div class="col-sm-3"></div>
@@ -20,7 +20,7 @@
             </div>
             <br/>
             <br/>
-            <h3>또는 백업된 계정 Key를<br/>입력하세요.</h3>
+            <h3> {{ $t('welcome-3') }} <br/> {{ $t('welcome-4') }} </h3>
             <br/>
             <div class="row">
                 <div class="col-sm-3"></div>
@@ -38,13 +38,13 @@
             </div>
           </div>
           <div id="step2" style="opacity: 0">
-              <h3><b><span style="color:#80D6EB">{{this.nameInput}}</span></b> 님!</h3>
-              <h3>Unboxing에 오신 것을</h3>
-              <h3>환영합니다 :)</h3>
+              <h3><b><span style="color:#80D6EB">{{this.nameInput}}</span></b> {{ $t('welcome-5') }} </h3>
+              <h3> {{ $t('welcome-6') }} </h3>
+              <h3> {{ $t('welcome-7') }} </h3>
           </div>
           <div id="step3" style="opacity: 0">
               <h3 style="color:lightcoral"><i class="fa fa-exclamation-circle"/></h3>
-              <h4>생성한 계정정보는 브라우저의<br/>'인터넷 사용 기록 삭제'를 하기 전까지<br/>유효합니다!</h4>
+              <h4> {{ $t('welcome-8') }} <br/>  {{ $t('welcome-9') }} <br/>  {{ $t('welcome-10') }} </h4>
           </div>
           <p></p>
       </div>
@@ -64,6 +64,11 @@
     },
     computed: {
       ...mapState(['ub_user', 'ub_tags', 'ub_fingerPrint'])
+    },
+    created() {
+      if(navigator.language != 'ko'){
+          this.$i18n.locale = 'en'
+      }
     },
     async mounted() {
       if(!this.ub_user){
@@ -121,8 +126,8 @@
             var newTagKey1 = newTagRef1.key;
             var newTagKey2 = newTagRef2.key;
             var updates = {};
-            updates['users/' + newUserKey + '/tags/' + newTagKey1] = {name: '일상'};
-            updates['users/' + newUserKey + '/tags/' + newTagKey2] = {name: '공부'};
+            updates['users/' + newUserKey + '/tags/' + newTagKey1] = {name: this.$t('default-tag-1')};
+            updates['users/' + newUserKey + '/tags/' + newTagKey2] = {name: this.$t('default-tag-2')};
             await db.db.ref().update(updates);
   
             this.setFingerPrint(fingerPrint);
@@ -132,8 +137,8 @@
               tutorial: 1
             });
             this.setTags([
-                {id: newTagKey1, name: '일상'},
-                {id: newTagKey2, name: '공부'}
+                {id: newTagKey1, name: this.$t('default-tag-1')},
+                {id: newTagKey2, name: this.$t('default-tag-2')}
             ])
 
             window.$('#step1').animate({opacity: 0}, 'slow', function() {window.$('#step1').hide()})
@@ -191,7 +196,7 @@
                 window.$('#step3').animate({opacity: 1}, 2000, function() {location.href="/list"});
               }
               else {
-                alert("존재하지 않는 계정정보입니다.");
+                alert(this.$t('alert-unknown'));
                 return 1;
               }
             });

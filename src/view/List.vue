@@ -6,7 +6,7 @@
         <div class="row">
             <div class="col-sm-2"></div>
             <div class="col-sm-8">
-                <div class="list-group" v-popover:bottom="'태그에 해당하는 박스만 따로 검색되어 나왔어요! 한번 열람해볼까요?'">
+                <div class="list-group" v-popover:bottom="$t('tooltip-tutorial-4-3')">
                     <a v-for="(post, index) in postData" :key="index" @click="moveToViewer(post.postId)" :id="post.postId" href="#" class="list-group-item" style="display: flex; justify-content: space-between;">
                         <div style="max-width: 50%; text-align: left;">
                             <span>{{post.title}}&nbsp;<i v-if="post.lock" class="fa fa-lock" style="color: green; font-size: smaller;"/></span>
@@ -19,16 +19,16 @@
                 
                 <div v-show="!fetching">
                     <div style="text-align: justify; padding: 10px">
-                        <span style="color:lightgrey; margin-right: 20px"><i class="fa fa-star" v-tooltip="'준비중입니다!'"/></span>
-                        <span v-if="this.ub_user" style="margin-right: 20px" @click="toggleListMode()" id="myBtn" v-popover:top="'내 게시물 보기를 눌러서 태그 선택화면을 꺼내보세요.'"><b>{{myList? 'ALL' : 'MY'}}</b></span>
-                        <span style="margin-right: 20px" @click="toggleListType()"><i :class="listView? 'fa fa-list' : 'fa fa-newspaper'"/></span>
+                        <span style="color:lightgrey; margin-right: 20px"><i class="fa fa-star" v-tooltip="$t('tooltip-developing')"/></span>
+                        <span v-if="this.ub_user" style="margin-right: 20px" @click="toggleListMode()" id="myBtn" v-popover:top="$t('tooltip-tutorial-4-1')"><b>{{myList? 'ALL' : 'MY'}}</b></span>
+                        <!-- <span style="margin-right: 20px" @click="toggleListType()"><i :class="listView? 'fa fa-list' : 'fa fa-newspaper'"/></span> -->
                         <!-- <span v-show="myList" @click="openSetting()"><i class="fas fa-cog"/></span> -->
                         <span style="position:absolute; right: 48%"><i @click="fetchNext()" class="fas fa-plus-circle"/></span>
-                        <span style="position:absolute; right: 5%"><i @click="moveToEditor()" class="fa fa-pen" v-popover:top="'포스트 하나 작성해볼까요?'"/></span>
+                        <span style="position:absolute; right: 5%" id="fa-pen" v-popover:top="$t('tooltip-tutorial-1')"><i @click="moveToEditor()" class="fa fa-pen"/></span>
                     </div>
                     <div v-show="myList && !editTag" style="text-align:left; margin-left: 10px">
-                        <span v-for="(ub_tag, index) in this.ub_tags" :key="index" :style="'margin-right: 15px; font-size: large;' + (tags[ub_tag.id]? 'color: orange' : 'color: lightgrey')" @click="toggleTag(ub_tag.id)"><b>#{{ub_tag.name}}</b></span>
-                        <i class="fa fa-edit" @click="editTags()" id="tagList" v-popover:top="'작성한 박스에 설정한 태그를 눌러 게시물 목록에 박스 게시물이 잘 나오는지 확인해보세요!'"></i>
+                        <span v-for="(ub_tag, index) in this.ub_tags" :key="index" :id="index == 0 ? 'tagList' : ''" v-popover:top="index == 0 ? $t('tooltip-tutorial-4-2') : ''" :style="'margin-right: 15px; font-size: large;' + (tags[ub_tag.id]? 'color: orange' : 'color: lightgrey')" @click="toggleTag(ub_tag.id)"><b>#{{ub_tag.name}}</b></span>
+                        <i class="fa fa-edit" @click="editTags()"></i>
                     </div>
                     <div v-show="editTag" style="text-align:left; margin-left: 10px">
                         <span v-for="(tag, index) in this.tagsEditing" :key="index" style="margin-right: 15px"><input type="text" v-model="tag.name" style="width: 20%; margin-right: 5px; margin-bottom: 10px;"/><i class="fas fa-times-circle" @click="deleteTags(index, tag.id)"/></span>
@@ -92,9 +92,9 @@ export default {
         }
     },
     created() {
-        // if(navigator.language != 'ko'){
-        //     this.$i18n.locale = 'en'
-        // }
+        if(navigator.language != 'ko'){
+            this.$i18n.locale = 'en'
+        }
     },
     async mounted() {
         history.replaceState({}, null, location.pathname);
@@ -122,15 +122,15 @@ export default {
             await this.fetchAll();
         }
 
-        if(this.$route.query.postId){
+        if(this.$route.query.postId && (!this.ub_user || this.ub_user.tutorial != 4)){
             window.$("#"+this.$route.query.postId).focus();
         }
 
         if(this.ub_user && this.ub_user.tutorial == 1){
-            setTimeout(() => {window.$(".fa-pen").tooltip('show');}, 500)
+            setTimeout(() => {window.$("#fa-pen").tooltip('show');}, 500)
         }
         else{
-            window.$(".fa-pen").tooltip('destroy');
+            window.$("#fa-pen").tooltip('destroy');
         }
 
         if(this.ub_user && this.ub_user.tutorial == 4){
@@ -221,7 +221,7 @@ export default {
                 }
             })
             if(blankNameExist){
-                alert('태그 이름을 입력해주세요!');
+                alert(this.$t('alert-tagname'));
             }
             else {
                 this.tagsEditing.forEach(async (tag) => {
@@ -356,31 +356,31 @@ export default {
         getLocaleTimeString(timeoffset) {
             var timeoffsetSeconds = (timeoffset / 1000).toFixed();
             if(timeoffsetSeconds < 60){
-                return timeoffsetSeconds + '초 전';
+                return timeoffsetSeconds + this.$t('seconds-tail');
             }
             else{
                 var timeoffsetMinutes = (timeoffsetSeconds / 60).toFixed();
                 if(timeoffsetMinutes < 60){
-                    return timeoffsetMinutes + '분 전';
+                    return timeoffsetMinutes + this.$t('minutes-tail');
                 }
                 else{
                     var timeoffsetHours = (timeoffsetMinutes / 60).toFixed();
                     if(timeoffsetHours < 24){
-                        return timeoffsetHours + '시간 전';
+                        return timeoffsetHours + this.$t('hours-tail');
                     }
                     else{
                         var timeoffsetDays = (timeoffsetHours / 24).toFixed();
                         if(timeoffsetDays < 7) {
-                            return timeoffsetDays + '일 전';
+                            return timeoffsetDays + this.$t('days-tail');
                         }
                         else{
                             var timeoffsetWeeks = (timeoffsetDays / 7).toFixed();
                             if(timeoffsetWeeks < 30) {
-                                return timeoffsetWeeks + '주 전';
+                                return timeoffsetWeeks + this.$t('weeks-tail');
                             }
                             else{
                                 var timeoffsetMonths = (timeoffsetWeeks / 30).toFixed();
-                                return timeoffsetMonths + '개월 전';
+                                return timeoffsetMonths + this.$t('months-tail');
                             }
                         }
                     }
