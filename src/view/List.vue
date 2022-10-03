@@ -19,9 +19,12 @@
                 
                 <div v-show="!fetching">
                     <div style="text-align: justify; padding: 10px">
-                        <span style="color:lightgrey; margin-right: 20px"><i class="fa fa-star" v-tooltip="'준비중입니다!'"/></span><span v-if="this.ub_user" style="margin-right: 20px" @click="toggleListMode()" id="myBtn" v-popover:top="'내 게시물 보기를 눌러서 태그 선택화면을 꺼내보세요.'"><b>{{myList? 'ALL' : 'MY'}}</b></span><span @click="toggleListType()"><i :class="listView? 'fa fa-list' : 'fa fa-newspaper'"/></span>
-                        <i @click="fetchNext()" class="fa fa-plus" style="position:absolute; right: 48%"/>
-                        <i @click="moveToEditor()" class="fa fa-pen" style="position:absolute; right: 5%" v-popover:top="'포스트 하나 작성해볼까요?'"/>
+                        <span style="color:lightgrey; margin-right: 20px"><i class="fa fa-star" v-tooltip="'준비중입니다!'"/></span>
+                        <span v-if="this.ub_user" style="margin-right: 20px" @click="toggleListMode()" id="myBtn" v-popover:top="'내 게시물 보기를 눌러서 태그 선택화면을 꺼내보세요.'"><b>{{myList? 'ALL' : 'MY'}}</b></span>
+                        <span style="margin-right: 20px" @click="toggleListType()"><i :class="listView? 'fa fa-list' : 'fa fa-newspaper'"/></span>
+                        <!-- <span v-show="myList" @click="openSetting()"><i class="fas fa-cog"/></span> -->
+                        <span style="position:absolute; right: 48%"><i @click="fetchNext()" class="fas fa-plus-circle"/></span>
+                        <span style="position:absolute; right: 5%"><i @click="moveToEditor()" class="fa fa-pen" v-popover:top="'포스트 하나 작성해볼까요?'"/></span>
                     </div>
                     <div v-show="myList && !editTag" style="text-align:left; margin-left: 10px">
                         <span v-for="(ub_tag, index) in this.ub_tags" :key="index" :style="'margin-right: 15px; font-size: large;' + (tags[ub_tag.id]? 'color: orange' : 'color: lightgrey')" @click="toggleTag(ub_tag.id)"><b>#{{ub_tag.name}}</b></span>
@@ -87,6 +90,11 @@ export default {
             },
             deep: true
         }
+    },
+    created() {
+        // if(navigator.language != 'ko'){
+        //     this.$i18n.locale = 'en'
+        // }
     },
     async mounted() {
         history.replaceState({}, null, location.pathname);

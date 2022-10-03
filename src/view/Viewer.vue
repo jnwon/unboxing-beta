@@ -105,6 +105,12 @@ export default {
                 this.moveToList();
             }
             else{
+                if(isMobile()){
+                    contents = contents.replace(/width: 50%/g, "width: 100%");
+                    contents = contents.replace(/width: 25%/g, "width: 50%");
+                    contents = contents.replace(/width:50%/g, "width: 100%");
+                    contents = contents.replace(/width:25%/g, "width: 50%");
+                }
                 this.postTitle = title;
                 this.postContents = contents;
                 this.postDateTime = datetime;
@@ -144,6 +150,20 @@ export default {
         } catch (e) {
             console.log(e);
             alert(e);
+        }
+
+        function isMobile() {
+            var user = navigator.userAgent;
+            var is_mobile = false;
+
+            if( user.indexOf("iPhone") > -1 
+                || user.indexOf("Android") > -1 
+                || user.indexOf("iPad") > -1
+                || user.indexOf("iPod") > -1
+            ) {
+                is_mobile = true; 
+            }
+            return is_mobile;
         }
     },
     computed: {
