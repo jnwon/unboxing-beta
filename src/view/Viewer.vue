@@ -120,7 +120,12 @@ export default {
                 this.postUserName = userName;
                 this.postUserId = userIdDisplay;
                 this.postTags = tags;
+
+                var contentsText = window.$('#contentsArea').text().substring(0,20);
                 document.title = title;
+                window.$('head').append('<meta property="og:title" content="'+title+'">');
+                window.$('head').append('<meta property="og:description" content="'+contentsText+'">');
+                window.$('head').append('<meta property="og:image" content="/src/assets/android-chrome-512x512.png">');
                 
                 if(this.postTags && this.ub_tags){
                     this.postTags.forEach((tag) => {
