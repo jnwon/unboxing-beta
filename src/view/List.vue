@@ -3,7 +3,16 @@
         <h2><i class="fas fa-box-open" @click="reload()"/></h2>
         <br/>
         <h3 v-if="fetching"><i class="fa fa-spinner fa-spin"/></h3>
-        <div class="row">
+
+        <div id="setting" class="sidebar">
+            <a href="#">About</a>
+            <a href="#">Services</a>
+            <a href="#">Clients</a>
+            <a href="#">Contact</a>
+            <a href="javascript:void(0)" class="closebtn" @click="closeSetting()">&times;</a>
+        </div>
+
+        <div id="main" class="row">
             <div class="col-sm-2"></div>
             <div class="col-sm-8">
                 <div class="list-group" v-popover:bottom="$t('tooltip-tutorial-4-3')">
@@ -387,6 +396,13 @@ export default {
                 }
             }
         },
+        openSetting() {
+            window.$('#setting').css("width", "250px");
+        },
+        closeSetting() {
+            window.$('#setting').css("width", 0);
+        },
+
         async querying() {
             var updates = {};
             const postListRef = db.db.ref('postsWithContents');
@@ -405,5 +421,63 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+
+/* The sidebar menu */
+.sidebar {
+  height: 100%; /* 100% Full-height */
+  width: 0; /* 0 width - change this with JavaScript */
+  position: fixed; /* Stay in place */
+  z-index: 1; /* Stay on top */
+  top: 0;
+  left: 0;
+  background-color: #111; /* Black*/
+  overflow-x: hidden; /* Disable horizontal scroll */
+  padding-top: 60px; /* Place content 60px from the top */
+  transition: 0.5s; /* 0.5 second transition effect to slide in the sidebar */
+}
+
+/* The sidebar links */
+.sidebar a {
+  padding: 8px 8px 8px 32px;
+  text-decoration: none;
+  font-size: 25px;
+  color: #818181;
+  display: block;
+  transition: 0.3s;
+}
+
+/* When you mouse over the navigation links, change their color */
+.sidebar a:hover {
+  color: #f1f1f1;
+}
+
+/* Position and style the close button (top right corner) */
+.sidebar .closebtn {
+  position: absolute;
+  top: 0;
+  right: 25px;
+  font-size: 36px;
+  margin-left: 50px;
+}
+
+/* The button used to open the sidebar */
+.openbtn {
+  font-size: 20px;
+  cursor: pointer;
+  background-color: #111;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+}
+
+.openbtn:hover {
+  background-color: #444;
+}
+
+/* Style page content - use this if you want to push the page content to the right when you open the side navigation */
+#main {
+  transition: margin-left .5s; /* If you want a transition effect */
+}
+
 </style>
   

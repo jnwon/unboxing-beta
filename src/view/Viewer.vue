@@ -120,6 +120,7 @@ export default {
                 this.postUserName = userName;
                 this.postUserId = userIdDisplay;
                 this.postTags = tags;
+                document.title = title;
                 
                 if(this.postTags && this.ub_tags){
                     this.postTags.forEach((tag) => {
