@@ -15,6 +15,9 @@ export default createStore({
         setUserInfo(state, user) {
             state.ub_user = user;
         },
+        setUserName(state, name) {
+            state.ub_user.name = name;
+        },
         setTutorialStep (state, step) {
             state.ub_user.tutorial = step;
         },
