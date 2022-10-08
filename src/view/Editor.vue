@@ -15,7 +15,9 @@
                 <div id="summernote" v-popover:top="$t('tooltip-tutorial-2-1')"></div>
                 <!-- <button @click="boxTravel()">each</button> -->
                 <i class="fa fa-arrow-left" @click="cancelPost()" style="margin-right: 20%;"/>
-                <i :class="submitting ? 'fa fa-spinner fa-spin' : 'fa fa-upload'" @click="submitPost()" style="margin-left: 20%;" v-popover:top="$t('tooltip-tutorial-2-2')"/>
+                <i v-if="!isEditmode" class="fas fa-folder-open" @click="loadTempPosts()" v-popover:top="$t('tooltip-load-temp-fail')"/>
+                <i v-if="!isEditmode" class="fas fa-save" @click="submitPost(this.loadedTempPostId, true)" v-popover:top="$t('tooltip-save-temp')"/>
+                <i :class="submitting ? 'fa fa-spinner fa-spin' : 'fa fa-upload'" @click="submitPost(this.loadedTempPostId, false)" style="margin-left: 20%;" v-popover:top="$t('tooltip-tutorial-2-2')"/>
                 <i :class="lock? 'fa fa-lock' : 'fa fa-unlock'" :style="'float: right; ' + (lock? 'color: green' : '')" @click="toggleLock()"/>
             </div>
         </div>
@@ -23,18 +25,26 @@
     </div>
 
     <!-- Modal -->
-    <div id="registerPassword" class="modal fade" role="dialog">
+    <div id="tempPosts" class="modal fade" role="dialog">
         <div class="modal-dialog">
-    
             <!-- Modal content-->
             <div class="modal-content">
-            <div class="modal-body">
-                <input type="text" class="form-control" v-model="passwordInput" @keyup.enter="submitPost()" placeholder="삭제 비밀번호를 설정하세요."/>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-primary" :disabled="submitting" v-html="submitting ? '<i class=\'fa fa-spinner fa-spin\'/>' : '저장'" @click="submitPost()"></button>
-                <button type="button" class="btn btn-default" data-dismiss="modal">취소</button>
-            </div>
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">{{ $t('modal-temp-posts-header') }}</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="list-group">
+                        <a v-for="(post, index) in tempPosts" :key="index" :id="post.postId" href="#" class="list-group-item" style="display: flex; justify-content: space-between;">
+                            <div @click="openTempPost(post.postId)" style="max-width: 45%; text-align: left;">
+                                <span>{{post.title}}</span>
+                            </div>
+                            <div style="max-width: 55%;">
+                                <span style="font-size:small; color:grey">{{post.datetime}}</span><i class="fa fa-times" style="margin-left: 10px" @click="removeTempPost(post.postId)"/>
+                            </div>
+                        </a>
+                    </div>
+                </div>
             </div>
     
         </div>
@@ -51,6 +61,9 @@ export default {
     data() {
         return {
             isEditmode : false,
+            isEmpty : true,
+            tempPosts : [],
+            loadedTempPostId : null,
             submitting : false,
             tags : [],
             postTags : [],
@@ -77,6 +90,27 @@ export default {
         }
     },
     async mounted() {
+
+        window.$('.fa-save').on('show.bs.tooltip', function() {
+            if(!this.submitting){
+                window.$('.fa-save + .tooltip > .tooltip-inner').css('display', 'block');
+            }
+        })
+        window.$('.fa-save').on('hide.bs.tooltip', function() {
+            window.$('.fa-save + .tooltip > .tooltip-inner').css('display', 'none');
+        })
+
+        await db.db.ref('posts').orderByChild('userId').startAt(this.ub_user.id).endAt(this.ub_user.id).once("value", (snapshot) => {
+            snapshot.forEach((data) => {
+                if(data.val().temp && !data.val().parent){
+                    this.tempPosts.push({postId: data.key, title: data.val().title, datetime: new Date(-data.val().timestamp).toLocaleString()});
+                }
+            })
+        })
+
+        if(this.tempPosts.length > 0){
+            window.$(".fa-folder-open").tooltip('destroy');
+        }
 
         if(this.ub_user.tutorial == 2){
             window.$('#summernote').tooltip('show');
@@ -153,6 +187,16 @@ export default {
                             })
                         })
                     }
+                },
+                onChange: function(contents) {
+                    if((contents == '<p style="text-align: left;"><br></p>' || contents == '')){
+                        window.$('.fa-folder-open').show();
+                        window.$('.fa-save').hide();
+                    }
+                    else{
+                        window.$('.fa-folder-open').hide();
+                        window.$('.fa-save').show();
+                    }
                 }
             }
         });
@@ -165,12 +209,65 @@ export default {
 
         if(this.$route.query.postId){
             this.isEditmode = true;
-
+            this.loadPost(this.$route.query.postId)
+        }
+    },
+    computed: {
+        ...mapState(['ub_user', 'ub_tags', 'ub_fingerPrint'])
+    },
+    methods: {
+        ...mapMutations(['setTutorialStep']),
+        setPassword() {
+            window.$("#registerPassword").modal('show');
+        },
+        toggleTag(tagId) {
+            this.tags[tagId] = !this.tags[tagId];
+        },
+        toggleLock() {
+            this.lock = !this.lock;
+        },
+        removeTempPost(postId) {
+            var updates = {};
+            db.db.ref('posts/'+postId+'/children').get().then(async (snapshot) => {
+                if(snapshot.exists){
+                    snapshot.forEach((data) => {
+                        updates['/postsWithContents/' + data.key] = null;
+                        updates['/posts/' + data.key] = null;
+                    })
+                }
+                updates['/postsWithContents/' + postId] = null;
+                updates['/posts/' + postId] = null;
+                try {
+                    await db.db.ref().update(updates);
+                } catch (e) {
+                    console.log(e);
+                    alert(e);
+                }
+            })
+            if(this.loadedTempPostId == postId){
+                this.loadedTempPostId = null;
+            }
+            this.tempPosts = this.tempPosts.filter((post) => {return post.postId != postId})
+        },
+        loadTempPosts() {
+            if(this.tempPosts.length == 0){
+                window.$(".fa-folder-open").tooltip('show');
+            }
+            else{
+                window.$("#tempPosts").modal('show');
+            }
+        },
+        async openTempPost(postId) {
+            this.loadedTempPostId = postId;
+            this.loadPost(postId);
+        },
+        async loadPost(postId) {
             var title;
             var contents;
             var fingerPrint;
-            const postRef = db.db.ref('postsWithContents/'+this.$route.query.postId);
+            const postRef = db.db.ref('postsWithContents/'+postId);
             try{
+                window.$("#tempPosts").modal('hide');
                 await postRef.get().then((snapshot) => {
                     this.lock = snapshot.val().lock;
                     title = snapshot.val().title;
@@ -211,24 +308,8 @@ export default {
                 console.log(e);
                 alert(e);
             }
-            
-        }
-    },
-    computed: {
-        ...mapState(['ub_user', 'ub_tags', 'ub_fingerPrint'])
-    },
-    methods: {
-        ...mapMutations(['setTutorialStep']),
-        setPassword() {
-            window.$("#registerPassword").modal('show');
         },
-        toggleTag(tagId) {
-            this.tags[tagId] = !this.tags[tagId];
-        },
-        toggleLock() {
-            this.lock = !this.lock;
-        },
-        async submitPost() {
+        async submitPost(loadedTempPostId, isSavedForTemp) {
             var date = new Date();
             var boxLock = this.lock;
             var children = this.children;
@@ -238,7 +319,10 @@ export default {
             
             var postListRef = db.db.ref('posts');
             var newPostRef = postListRef.push();
-            var postKey = this.isEditmode? this.$route.query.postId : newPostRef.key;
+            var postKey = loadedTempPostId;
+            if(!loadedTempPostId) {
+                postKey = this.isEditmode? this.$route.query.postId : newPostRef.key;
+            }
             var defaultBoxtitleTail = this.$t('default-boxtitle-tail');
 
             window.$("div.box-component").each(function(index, element){
@@ -267,6 +351,7 @@ export default {
                 var userId = boxUserInfo.id;
                 var userName = boxUserInfo.name;
                 var fingerPrint = boxFingerPrint;
+                var temp = isSavedForTemp? true : null;
 
                 updates['/postsWithContents/' + boxKey] = {
                     title: title,
@@ -286,7 +371,8 @@ export default {
                     userId: userId,
                     userName: userName,
                     tags: tags,
-                    parent: postKey
+                    parent: postKey,
+                    temp: temp
                 };
 
                 children[boxKey] = title;
@@ -330,24 +416,39 @@ export default {
                     userId: this.ub_user.id,
                     userName: this.ub_user.name,
                     tags: selectedTags,
-                    children: this.children
+                    children: this.children,
+                    temp: isSavedForTemp? true : null
                 };
                 this.submitting = true;
                 window.$('#summernote').summernote('disable');
                 await db.db.ref().update(updates);
-                if(this.ub_user.tutorial == 2){
-                    this.setTutorialStep(3);
+                if(isSavedForTemp){
+                    this.loadedTempPostId = postKey;
+                    window.$('.fa-save').tooltip('show');
+                    this.submitting = false;
+                    window.$('#summernote').summernote('enable');
+                    var categories = this.categorySelect;
+                    window.$("div.box-component").each(function(index, element){
+                        var selectedTagId = window.$(element).find("span.box-component").attr("tagid");
+                        var boxTitle = window.$(element).find("h3.box-component").text();
+                        window.$(element).find("h3.box-component").replaceWith('<select class="box-component" style="margin-right: 5px">' + categories + '</select>');
+                        window.$(element).find("span.box-component").replaceWith('<input class="box-component" type="text" value="' + boxTitle + '">');
+                        window.$(element).find("select.box-component").val(selectedTagId).attr("selected", true);
+                    })
                 }
-                window.$("#registerPassword").modal('hide');
-                if(!this.isEditmode){
-                    sessionStorage.removeItem('lastTimestamp');
-                    sessionStorage.removeItem('myNextIndex');
+                else{
+                    if(this.ub_user.tutorial == 2){
+                        this.setTutorialStep(3);
+                    }
+                    if(!this.isEditmode){
+                        sessionStorage.removeItem('lastTimestamp');
+                        sessionStorage.removeItem('myNextIndex');
+                    }
+                    router.push({name: 'Viewer', query: {postId: postKey}})
                 }
-                router.push({name: 'Viewer', query: {postId: postKey}})
             } catch (e) {
                 console.log(e);
                 alert(e);
-                window.$("#registerPassword").modal('hide');
             }
         },
         cancelPost() {
@@ -357,3 +458,9 @@ export default {
 }
 
 </script>
+
+<style>
+.fa-save + .tooltip > .tooltip-inner {
+    display: none;
+}
+</style>

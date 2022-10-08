@@ -30,6 +30,9 @@
     "tooltip-tutorial-5" : "이렇게 박스만 따로 찾아서 열람할 수 있답니다. 앞으로 언박싱과 함께 즐거운 블로그생활 되세요 :)♥︎",
 
     "tooltip-developing": "준비중입니다!",
+    "tooltip-load-temp-fail" : "임시저장글이 없습니다!",
+    "tooltip-save-temp" : "임시저장되었습니다.",
+    "modal-temp-posts-header" : "임시저장글",
 
     "box-template-rear" : "</select><input class=\"box-component\" type=\"text\" placeholder=\"박스 제목을 입력하세요\"><i class=\"fa fa-trash\" style=\"margin-left: 15px\"></i><p><br/></p><p><br/></p></blockquote></div>",
     "box-tutorial" : "<p style=\"color: orange; text-align: left\"><b>박스는 포스트 속의 하위 포스트예요.<br/><br/>부모 포스트의 내용에 함께 포함되어있지만, 박스 또한 개별적으로 열람 가능한 하나의 독립적인 포스트지요.<br/><br/>설정해둔 박스 태그분류를 통해 박스끼리만 분류해서 모아서 볼 수도 있답니다 :D<br/><br/>한 포스트 안에 여러 개의 박스를 넣을수도 있어요!</b><br/></p>",

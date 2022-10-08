@@ -1,6 +1,6 @@
 <template>
     <div v-if="this.userInfo" id="setting" class="sidebar">
-        <a href="#" v-if="!editingUsername" id="setting-UserName" @click="editUserName()"><span style="margin-right:15px; color:lightcyan;"><b>{{this.userInfo.user.name}}</b></span><span><i class="fa fa-edit"/></span></a>
+        <a href="javascript:void(0)" v-if="!editingUsername" id="setting-UserName" @click="editUserName()"><span style="margin-right:15px; color:lightcyan;"><b>{{this.userInfo.user.name}}</b></span><span><i class="fa fa-edit"/></span></a>
         <div v-else style="padding: 8px 8px 5px 32px;">
             <input type="text" v-model="newUserName" @keydown.enter="completeEditUserName()" style="width:120px; margin-right: 5px;"/>
             <i class="fa fa-check" style="margin-left: 10px; margin-right: 10px;" @click="completeEditUserName()"></i>

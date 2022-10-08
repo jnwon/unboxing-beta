@@ -30,6 +30,9 @@
     "tooltip-tutorial-5" : "Yes, you can read just Box's contents like this. Now enjoy your blogging life with Unboxing :)♥︎",
 
     "tooltip-developing": "Developing now!",
+    "tooltip-load-temp-fail" : "No temporarily saved post!",
+    "tooltip-save-temp" : "Temporarily saved.",
+    "modal-temp-posts-header" : "Temporarily saved posts",
 
     "box-template-rear" : "</select><input class=\"box-component\" type=\"text\" placeholder=\"Input a title of this box.\"><i class=\"fa fa-trash\" style=\"margin-left: 15px\"></i><p><br/></p><p><br/></p></blockquote></div>",
     "box-tutorial" : "<p style=\"color: orange; text-align: left\"><b>BOX is inner post in a post.<br/><br/>It belongs to contents of its parent post but, a BOX is also an independent post and available to be shown individually.<br/><br/>You can classify just Boxes by attached tags.<br/><br/>And you can put more than one BOX in a post!</b><br/></p>",

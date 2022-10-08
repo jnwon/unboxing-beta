@@ -27,7 +27,7 @@
                         <span v-if="this.ub_user" style="margin-right: 20px" @click="toggleListMode()" id="myBtn" v-popover:top="$t('tooltip-tutorial-4-1')"><b>{{myList? 'ALL' : 'MY'}}</b></span>
                         <!-- <span style="margin-right: 20px" @click="toggleListType()"><i :class="listView? 'fa fa-list' : 'fa fa-newspaper'"/></span> -->
                         <span v-show="myList" @click="openSetting()"><i class="fas fa-cog"/></span>
-                        <span style="position:absolute; right: 48%"><i @click="fetchNext()" class="fas fa-plus-circle"/></span>
+                        <span style="position:absolute; right: 48%"><i @click="fetchNext(10)" class="fas fa-plus-circle"/></span>
                         <span style="position:absolute; right: 5%" id="fa-pen" v-popover:top="$t('tooltip-tutorial-1')"><i @click="moveToEditor()" class="fa fa-pen"/></span>
                     </div>
                     <div v-show="myList && !editTag" style="text-align:left; margin-left: 10px">
@@ -73,7 +73,7 @@ export default {
             tags: [],
             tagsEditing : [],
             tagsRemoved : [],
-            filters: []
+            filters: [],
         }
     },
     watch: {
@@ -103,6 +103,8 @@ export default {
         }
     },
     async mounted() {
+
+        document.title = "unboxing-beta";
 
         history.replaceState({}, null, location.pathname);
 
@@ -264,24 +266,35 @@ export default {
             const postListRef = this.$route.query.postId && sessionStorage.getItem('lastTimestamp')? db.db.ref('posts').orderByChild('timestamp').endAt(Number(sessionStorage.getItem('lastTimestamp'))) : db.db.ref('posts').orderByChild('timestamp').limitToFirst(10);
             var timestamp;
             var timeoffset;
+            var pushCount = 0;
+            var fetchCount = 0;
             try{
-                await postListRef.on("value", (snapshot) => {
+                postListRef.on("value", (snapshot) => {
                     snapshot.forEach((data) => {
+                        fetchCount++;
                         timestamp = data.val().timestamp;
                         timeoffset = this.currentTimestamp + timestamp;
-                        if(!data.val().lock || (this.ub_user && data.val().userId == this.ub_user.id)){
-                            this.postData.push({postId: data.key, title: data.val().title, userId: data.val().userId, userName: data.val().userName, timeOffset: this.getLocaleTimeString(timeoffset), lock: data.val().lock});
+                        if(!data.val().temp){
+                            if(!data.val().lock || (this.ub_user && data.val().userId == this.ub_user.id)){
+                                this.postData.push({postId: data.key, title: data.val().title, userId: data.val().userId, userName: data.val().userName, timeOffset: this.getLocaleTimeString(timeoffset), lock: data.val().lock});
+                                pushCount++;
+                            }
                         }
                     })
                     this.lastTimestamp = timestamp;
                     this.fetching = false;
+
+                    var remainCount = 10 - pushCount;
+                    if(fetchCount > 0 && remainCount > 0){
+                        this.fetchNext(remainCount)
+                    }
                 })
             } catch (e) {
                 console.log(e);
                 alert(e);
             }
         },
-        async fetchNext() {
+        async fetchNext(offset) {
             if(this.myList && this.myNextIndex >= 0 ){
                 for(var i = this.myNextIndex; i >= (this.myNextIndex -10 >=0? this.myNextIndex -10 : 0); i--){
                     this.postData.push(this.MyData[i]);
@@ -289,20 +302,30 @@ export default {
                 this.myNextIndex = i;
             }
             else if(!this.myList){
-                const postListRef = db.db.ref('posts').limitToFirst(10);
+                const postListRef = db.db.ref('posts').limitToFirst(Number(offset));
                 var timestamp;
                 var timeoffset;
+                var pushCount = 0;
+                var fetchCount = 0;
                 try{
-                    await postListRef.orderByChild('timestamp').startAfter(this.lastTimestamp).on("value", (snapshot) => {
+                    postListRef.orderByChild('timestamp').startAfter(this.lastTimestamp).on("value", (snapshot) => {
                         snapshot.forEach((data) => {
+                            fetchCount++;
                             timestamp = data.val().timestamp;
                             timeoffset = this.currentTimestamp + timestamp;
-                            if(!data.val().lock || (this.ub_user && data.val().userId == this.ub_user.id)){
-                                this.postData.push({postId: data.key, title: data.val().title, userId: data.val().userId, userName: data.val().userName, timeOffset: this.getLocaleTimeString(timeoffset), lock: data.val().lock});
+                            if(!data.val().temp){
+                                if(!data.val().lock || (this.ub_user && data.val().userId == this.ub_user.id)){
+                                    this.postData.push({postId: data.key, title: data.val().title, userId: data.val().userId, userName: data.val().userName, timeOffset: this.getLocaleTimeString(timeoffset), lock: data.val().lock});
+                                    pushCount++;
+                                }
                             }
                         })
                         if(timestamp){
                             this.lastTimestamp = timestamp;
+                        }
+                        var remainCount = offset - pushCount;
+                        if(fetchCount > 0 && remainCount > 0){
+                            this.fetchNext(remainCount)
                         }
                     })
                 } catch (e) {
@@ -322,24 +345,26 @@ export default {
             try{
                 await postListRef.orderByChild('userId').startAt(this.ub_user.id).endAt(this.ub_user.id).once("value", (snapshot) => {
                     snapshot.forEach((data) => {
-                        timestamp = data.val().timestamp;
-                        timeoffset = this.currentTimestamp + timestamp;
-                        if(this.filters.length > 0){
-                            var tagMatched = false;
-                            if(data.val().tags){
-                                data.val().tags.forEach((tag) => {
-                                    if(this.filters.indexOf(tag.id) >= 0){
-                                        tagMatched = true;
-                                        return 0;
-                                    }
-                                })
+                        if(!data.val().temp){
+                            timestamp = data.val().timestamp;
+                            timeoffset = this.currentTimestamp + timestamp;
+                            if(this.filters.length > 0){
+                                var tagMatched = false;
+                                if(data.val().tags){
+                                    data.val().tags.forEach((tag) => {
+                                        if(this.filters.indexOf(tag.id) >= 0){
+                                            tagMatched = true;
+                                            return 0;
+                                        }
+                                    })
+                                }
+                                if(tagMatched){
+                                    this.MyData.push({postId: data.key, title: data.val().title, userId: data.val().userId, userName: data.val().userName, timeOffset: this.getLocaleTimeString(timeoffset), lock: data.val().lock});
+                                }
                             }
-                            if(tagMatched){
+                            else{
                                 this.MyData.push({postId: data.key, title: data.val().title, userId: data.val().userId, userName: data.val().userName, timeOffset: this.getLocaleTimeString(timeoffset), lock: data.val().lock});
                             }
-                        }
-                        else{
-                            this.MyData.push({postId: data.key, title: data.val().title, userId: data.val().userId, userName: data.val().userName, timeOffset: this.getLocaleTimeString(timeoffset), lock: data.val().lock});
                         }
                     })
                     var myDataLen = this.MyData.length;
