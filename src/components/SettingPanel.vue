@@ -6,9 +6,9 @@
             <i class="fa fa-check" style="margin-left: 10px; margin-right: 10px;" @click="completeEditUserName()"></i>
             <i class="fa fa-undo" style="margin-left: 10px; margin-right: 10px;" @click="cancelEditUserName()"></i>
         </div>
-        <a href="#">Services</a>
-        <a href="#">Clients</a>
-        <a href="#">Contact</a>
+        <a href="javascript:void(0)">메일주소 등록</a>
+        <a href="javascript:void(0)">계정 백업</a>
+        <a href="javascript:void(0)">Contact</a>
         <a href="javascript:void(0)" @click="closeSetting()"><i class="fa fa-arrow-left"/></a>
     </div>
 </template>

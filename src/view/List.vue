@@ -12,10 +12,10 @@
             <div class="col-sm-8">
                 <div class="list-group" v-popover:bottom="$t('tooltip-tutorial-4-3')">
                     <a v-for="(post, index) in postData" :key="index" @click="moveToViewer(post.postId)" :id="post.postId" href="#" class="list-group-item" style="display: flex; justify-content: space-between;">
-                        <div style="max-width: 50%; text-align: left;">
+                        <div class="postTitle" style="text-align: left;">
                             <span>{{post.title}}&nbsp;<i v-if="post.lock" class="fa fa-lock" style="color: green; font-size: smaller;"/></span>
                         </div>
-                        <div style="max-width: 50%">
+                        <div class="postMeta">
                             <span :style="'font-size:small; color:' + (this.ub_user && post.userId == this.ub_user.id? 'coral' : 'lightgrey')">{{post.userName}}</span><span style="font-size:small; color:lightgrey"> | {{post.timeOffset}}</span>
                         </div>
                     </a>
@@ -26,7 +26,7 @@
                         <span style="color:lightgrey; margin-right: 20px"><i class="fa fa-star" v-tooltip="$t('tooltip-developing')"/></span>
                         <span v-if="this.ub_user" style="margin-right: 20px" @click="toggleListMode()" id="myBtn" v-popover:top="$t('tooltip-tutorial-4-1')"><b>{{myList? 'ALL' : 'MY'}}</b></span>
                         <!-- <span style="margin-right: 20px" @click="toggleListType()"><i :class="listView? 'fa fa-list' : 'fa fa-newspaper'"/></span> -->
-                        <span v-show="myList" @click="openSetting()"><i class="fas fa-cog"/></span>
+                        <!-- <span v-show="myList" @click="openSetting()"><i class="fas fa-cog"/></span> -->
                         <span style="position:absolute; right: 48%"><i @click="fetchNext(10)" class="fas fa-plus-circle"/></span>
                         <span style="position:absolute; right: 5%" id="fa-pen" v-popover:top="$t('tooltip-tutorial-1')"><i @click="moveToEditor()" class="fa fa-pen"/></span>
                     </div>
@@ -455,6 +455,36 @@ export default {
 /* Style page content - use this if you want to push the page content to the right when you open the side navigation */
 #main {
   transition: margin-left .5s; /* If you want a transition effect */
+}
+.postTitle {
+    max-width: 75%;
+    display: block;/* 블록태그로 만들어준다 */
+    text-overflow: ellipsis;/* 말줄임 css */
+    white-space: nowrap;/*글자를 한줄로 모아준다*/
+    overflow: hidden;
+}
+.postMeta {
+    max-width: 25%;
+    display: block;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+}
+@media screen and (max-width: 450px) {
+  .postTitle {
+    max-width: 50%;
+    display: block;/* 블록태그로 만들어준다 */
+    text-overflow: ellipsis;/* 말줄임 css */
+    white-space: nowrap;/*글자를 한줄로 모아준다*/
+    overflow: hidden;
+  }
+  .postMeta {
+    max-width: 50%;
+    display: block;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+  }
 }
 
 </style>
