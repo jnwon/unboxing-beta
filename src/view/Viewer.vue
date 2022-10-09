@@ -251,5 +251,13 @@ iframe {
     max-width: 100%;
     height: 360px;
 }
+
+.alert-warning {
+    width: 100%;
+    display: block;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+}
 </style>
   

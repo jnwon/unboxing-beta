@@ -5,7 +5,7 @@
         <h3 v-if="fetching"><i class="fa fa-spinner fa-spin"/></h3>
 
         <setting-panel :userInfo="{user: ub_user, fingerPrint: ub_fingerPrint}"
-                        @saveNewUserName="saveNewUserName"/>
+                        @saveNewUserName="saveNewUserName" @saveNewEmail="saveNewEmail"/>
 
         <div id="main" class="row">
             <div class="col-sm-2"></div>
@@ -26,7 +26,7 @@
                         <span style="color:lightgrey; margin-right: 20px"><i class="fa fa-star" v-tooltip="$t('tooltip-developing')"/></span>
                         <span v-if="this.ub_user" style="margin-right: 20px" @click="toggleListMode()" id="myBtn" v-popover:top="$t('tooltip-tutorial-4-1')"><b>{{myList? 'ALL' : 'MY'}}</b></span>
                         <!-- <span style="margin-right: 20px" @click="toggleListType()"><i :class="listView? 'fa fa-list' : 'fa fa-newspaper'"/></span> -->
-                        <!-- <span v-show="myList" @click="openSetting()"><i class="fas fa-cog"/></span> -->
+                        <span v-show="myList" @click="openSetting()"><i class="fas fa-cog"/></span>
                         <span style="position:absolute; right: 48%"><i @click="fetchNext(10)" class="fas fa-plus-circle"/></span>
                         <span style="position:absolute; right: 5%" id="fa-pen" v-popover:top="$t('tooltip-tutorial-1')"><i @click="moveToEditor()" class="fa fa-pen"/></span>
                     </div>
@@ -155,7 +155,7 @@ export default {
         ...mapState(['ub_user', 'ub_tags', 'ub_fingerPrint'])
     },
     methods: {
-        ...mapMutations(['setTags', 'setTutorialStep', 'setUserName']),
+        ...mapMutations(['setTags', 'setTutorialStep', 'setUserName', 'setEmail']),
         reload() {
             location.reload();
         },
@@ -420,12 +420,22 @@ export default {
             }
         },
         openSetting() {
-            window.$('#setting').css("width", "250px");
+            window.$('#setting').css("width", "300px");
         },
         saveNewUserName(userName) {
             try {
                 this.setUserName(userName);
                 db.db.ref('users/' + this.ub_user.id + '/name').set(userName);
+            }
+            catch (e) {
+                console.log(e);
+                alert(e);
+            }
+        },
+        saveNewEmail(email) {
+            try {
+                this.setEmail(email);
+                db.db.ref('users/' + this.ub_user.id + '/email').set(email);
             }
             catch (e) {
                 console.log(e);

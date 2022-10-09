@@ -81,7 +81,7 @@
           var tutorial = this.ub_user.tutorial;
           await db.db.ref('users/' + userId).get().then((snapshot) => {
             console.log(snapshot.val().name);
-            this.setUserInfo({id: userId, name: snapshot.val().name, tutorial: tutorial})
+            this.setUserInfo({id: userId, name: snapshot.val().name, email: snapshot.val().email, tutorial: tutorial})
           })
           var tags = [];
           await db.db.ref('users/' + userId + '/tags').get().then((snapshot) => {

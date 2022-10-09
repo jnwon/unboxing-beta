@@ -91,14 +91,14 @@ export default {
     },
     async mounted() {
 
-        window.$('.fa-save').on('show.bs.tooltip', function() {
-            if(!this.submitting){
-                window.$('.fa-save + .tooltip > .tooltip-inner').css('display', 'block');
-            }
-        })
-        window.$('.fa-save').on('hide.bs.tooltip', function() {
-            window.$('.fa-save + .tooltip > .tooltip-inner').css('display', 'none');
-        })
+        // window.$('.fa-save').on('show.bs.tooltip', function() {
+        //     if(!this.submitting){
+        //         window.$('.fa-save + .tooltip > .tooltip-inner').css('display', 'block');
+        //     }
+        // })
+        // window.$('.fa-save').on('hide.bs.tooltip', function() {
+        //     window.$('.fa-save + .tooltip > .tooltip-inner').css('display', 'none');
+        // })
 
         await db.db.ref('posts').orderByChild('userId').startAt(this.ub_user.id).endAt(this.ub_user.id).once("value", (snapshot) => {
             snapshot.forEach((data) => {
@@ -252,6 +252,7 @@ export default {
         loadTempPosts() {
             if(this.tempPosts.length == 0){
                 window.$(".fa-folder-open").tooltip('show');
+                setTimeout(() => {window.$(".fa-folder-open").tooltip('hide');}, 3000)
             }
             else{
                 window.$("#tempPosts").modal('show');
@@ -425,6 +426,7 @@ export default {
                 if(isSavedForTemp){
                     this.loadedTempPostId = postKey;
                     window.$('.fa-save').tooltip('show');
+                    setTimeout(() => {window.$('.fa-save').tooltip('hide');}, 3000)
                     this.submitting = false;
                     window.$('#summernote').summernote('enable');
                     var categories = this.categorySelect;
@@ -460,7 +462,7 @@ export default {
 </script>
 
 <style>
-.fa-save + .tooltip > .tooltip-inner {
+/* .fa-save + .tooltip > .tooltip-inner {
     display: none;
-}
+} */
 </style>

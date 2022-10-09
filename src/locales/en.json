@@ -1,4 +1,12 @@
 {
+    "info-version" : "0.10",
+    "info-version-label" : "Unboxing Version : ",
+    "info-contact" : "To Developer : ",
+    "info-oss" : "Open Source Licenses",
+
+    "setting-email-register" : "Register E-mail",
+    "setting-placeholder-authnumber" : "Auth Number",
+
     "default-tag-1" : "dailylife",
     "default-tag-2" : "learning",
 
@@ -29,6 +37,9 @@
     "tooltip-tutorial-4-3" : "You see, the BOX of the tag just chosen was shown alone! Now let's open the contents of the BOX.",
     "tooltip-tutorial-5" : "Yes, you can read just Box's contents like this. Now enjoy your blogging life with Unboxing :)♥︎",
 
+    "tooltip-setting-email-input" : "Input your E-mail address.",
+    "tooltip-setting-auth-input" : "Enter the auth number.",
+    "tooltip-setting-email" : "E-mail has been registered.",
     "tooltip-developing": "Developing now!",
     "tooltip-load-temp-fail" : "No temporarily saved post!",
     "tooltip-save-temp" : "Temporarily saved.",
@@ -48,5 +59,7 @@
     "alert-locked" : "A locked post by its owner.",
     "alert-tagname" : "Fill the tag name in!",
     "alert-editbox" : "Modifying BOX itself is unavailable now.\nPlease edit this by modifying the parent post of this BOX.",
+    "alert-setting-authnumber" : "An authentication number was sent to the E-mail you had entered.\nPlease fill the number in.",
+    "alert-setting-wrongauth" : "This is wrong auth number.",
     "confitm-delete" : "You really want to remove?"
 }

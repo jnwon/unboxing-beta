@@ -21,7 +21,7 @@ app.directive('popover', {
         window.$(el).tooltip({
             title: binding.value,
             placement: binding.arg,
-            triger: 'manual'
+            trigger: 'manual click'
         })
     }
 })

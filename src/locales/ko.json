@@ -1,4 +1,12 @@
 {
+    "info-version" : "0.10",
+    "info-version-label" : "Unboxing 버전 : ",
+    "info-contact" : "개발자 연락처 : ",
+    "info-oss" : "오픈소스 라이선스",
+
+    "setting-email-register" : "이메일 등록",
+    "setting-placeholder-authnumber" : "인증번호",
+    
     "default-tag-1" : "일상",
     "default-tag-2" : "공부",
 
@@ -29,6 +37,9 @@
     "tooltip-tutorial-4-3" : "태그에 해당하는 박스만 따로 검색되어 나왔어요! 한번 열람해볼까요?",
     "tooltip-tutorial-5" : "이렇게 박스만 따로 찾아서 열람할 수 있답니다. 앞으로 언박싱과 함께 즐거운 블로그생활 되세요 :)♥︎",
 
+    "tooltip-setting-email-input" : "이메일 주소를 입력하세요.",
+    "tooltip-setting-auth-input" : "인증번호를 입력하세요.",
+    "tooltip-setting-email" : "이메일이 등록되었습니다.",
     "tooltip-developing": "준비중입니다!",
     "tooltip-load-temp-fail" : "임시저장글이 없습니다!",
     "tooltip-save-temp" : "임시저장되었습니다.",
@@ -43,10 +54,13 @@
     "default-boxtitle-tail" : "에 저장된 박스입니다.",
     "default-posttitle-tail" : "에 저장된 글입니다.",
 
+    
     "alert-unknown" : "존재하지 않는 계정정보입니다.",
     "alert-forbiden" : "포스트 작성자만 수정할 수 있습니다.",
     "alert-locked" : "비밀글입니다.",
     "alert-tagname" : "태그 이름을 입력해주세요!",
     "alert-editbox" : "박스 글의 개별 수정은 현재 불가능합니다.\n부모 포스트의 수정을 통해 박스 내용을 수정해주세요.",
+    "alert-setting-authnumber" : "입력하신 이메일로 인증번호가 전송되었습니다.\n인증번호를 입력해주세요.",
+    "alert-setting-wrongauth" : "인증번호를 잘못 입력하셨습니다.",
     "confitm-delete" : "정말로 삭제할까요?"
 }

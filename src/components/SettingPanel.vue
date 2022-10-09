@@ -6,14 +6,52 @@
             <i class="fa fa-check" style="margin-left: 10px; margin-right: 10px;" @click="completeEditUserName()"></i>
             <i class="fa fa-undo" style="margin-left: 10px; margin-right: 10px;" @click="cancelEditUserName()"></i>
         </div>
-        <a href="javascript:void(0)">메일주소 등록</a>
+        <a v-if="userInfo.user.email && !editingEmail && !authingEmail" href="javascript:void(0)" @click="editingEmail = true"><span style="margin-right:15px;" id="setting-Email" v-popover:top="$t('tooltip-setting-email')">{{this.userInfo.user.email}}</span><span><i class="fa fa-edit"/></span></a>
+        <a v-else-if="!userInfo.user.email && !editingEmail && !authingEmail" href="javascript:void(0)" @click="editingEmail = true">{{ $t('setting-email-register') }}</a>
+        <div v-else-if="editingEmail && !authingEmail" style="padding: 8px 8px 5px 32px;">
+            <input type="text" id="inputEmail" placeholder="sample@sam.ple" v-model="newEmail" v-popover:top="$t('tooltip-setting-email-input')" @keydown.enter="authEmail()" style="width:120px; margin-right: 5px;"/>
+            <i class="fa fa-check" style="margin-left: 10px; margin-right: 10px;" @click="authEmail()"></i>
+            <i class="fa fa-undo" style="margin-left: 10px; margin-right: 10px;" @click="cancelEditEmail()"></i>
+        </div>
+        <div v-else-if="!editingEmail && authingEmail" style="padding: 8px 8px 5px 32px;">
+            <input type="text" id="inputAuth" :placeholder="$t('setting-placeholder-authnumber')" v-model="authNumber" v-popover:top="$t('tooltip-setting-auth-input')" @keydown.enter="confirmAuth()" style="width:120px; margin-right: 5px;"/>
+            <i class="fa fa-check" style="margin-left: 10px; margin-right: 10px;" @click="confirmAuth()"></i>
+            <i class="fa fa-undo" style="margin-left: 10px; margin-right: 10px;" @click="cancelEditEmail()"></i>
+        </div>
+        <div style="display: flex;"><a href="javascript:void(0)" style="position:relative; left: 120px">My Unboxing</a><a href="javascript:void(0)" style="position:absolute; right: 0px"><i class="fas fa-wrench"></i></a></div>
+        <br/>
+        <a href="javascript:void(0)">로그아웃</a>
         <a href="javascript:void(0)">계정 백업</a>
-        <a href="javascript:void(0)">Contact</a>
-        <a href="javascript:void(0)" @click="closeSetting()"><i class="fa fa-arrow-left"/></a>
+        <a href="javascript:void(0)" style="color:crimson">계정 삭제</a>
+        <div style="display: flex;"><a href="javascript:void(0)" @click="closeSetting()" style="position:relative; left: 180px"><i class="fa fa-arrow-left"/></a><a href="javascript:void(0)" style="position:absolute; right: 0px"><i class="fas fa-info-circle" onclick="$('#info').modal('show')"></i></a></div>
+    </div>
+
+    <!-- Modal -->
+    <div id="info" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body" style="text-align: left;">
+                    <p>・&nbsp;{{ $t('info-version-label') + $t('info-version') }}</p>
+                    <p>・&nbsp;{{ $t('info-contact') }}<a href="mailto:unboxing.manager@gmail.com?subject=[Unboxing]">unboxing.manager@gmail.com</a></p>
+                    <p>・&nbsp;{{ $t('info-oss') }}</p>
+                    <p v-for="(os, index) in ossList" :key="index" style="padding-left: 10px; margin-bottom: 5px;">
+                        <span>{{os.libraryName}}&nbsp;|&nbsp;{{os.version}}&nbsp;|&nbsp;{{os._license}}&nbsp;License</span>
+                    </p>
+                </div>
+            </div>
+    
+        </div>
     </div>
 </template>
 
 <script>
+import oss from '@/oss/ossList.json';
+import emailjs from '@emailjs/browser';
+
 export default {
     name: 'Setting-Panel',
     props: {
@@ -25,11 +63,26 @@ export default {
     data() {
         return {
             editingUsername: false,
+            editingEmail: false,
+            authingEmail: false,
+            authNumber: null,
+            ranNum: null,
             newUserName: '',
+            newEmail: '',
+            ossList: []
         };
     },
     mounted() {
+        oss.forEach((os) => {
+            this.ossList.push(os);
+        })
+        this.ossList.push({libraryName: 'font-awesome', version: '5.8.2', _license: 'CC BY 4.0'});
+        this.ossList.push({libraryName: 'bootstrap', version: '3.4.1', _license: 'MIT'});
+        this.ossList.push({libraryName: 'jquery', version: '3.6.0', _license: 'MIT'});
+        this.ossList.push({libraryName: 'summernote', version: '0.8.18', _license: 'MIT'});
+
         this.newUserName = this.userInfo.user.name;
+        this.newEmail =  this.userInfo.user.email;
     },
     methods: {
         closeSetting() {
@@ -46,12 +99,57 @@ export default {
             this.newUserName = this.userInfo.user.name;
             this.editingUsername = false;
         },
+        authEmail() {
+            if(this.newEmail){
+                this.ranNum = Math.floor(Math.random()*(9999-1111+1)) + 1111;
+                var templateId = navigator.language == 'ko'? 'template_1b8u4wi' : 'template_uis7qxi';
+                emailjs.init('F69oNO4Ob024R0ygE');
+                emailjs.send("service_qqdc6ym",templateId,{
+                    to_name: this.userInfo.user.name,
+                    authcode: this.ranNum,
+                    mail_to: this.newEmail,
+                    reply_to: 'unboxing.manager@gmail.com'
+                },'F69oNO4Ob024R0ygE');
+
+                alert(this.$t('alert-setting-authnumber'));
+                this.authingEmail = true;
+                this.editingEmail = false;
+            }
+            else{
+                window.$("#inputEmail").tooltip('show');
+            }
+        },
+        confirmAuth() {
+            if(this.authNumber){
+                if(this.authNumber == this.ranNum){
+                    this.$emit('saveNewEmail', this.newEmail);
+                    this.authingEmail = false;
+                    this.editingEmail = false;
+                    setTimeout(function() {
+                        window.$("#setting-Email").tooltip('show');
+                    }, 500)
+                    setTimeout(function() {
+                        window.$("#setting-Email").tooltip('hide');
+                    }, 3000)
+                }
+                else{
+                    alert(this.$t('alert-setting-wrongauth'))
+                }
+            }
+            else{
+                window.$("#inputAuth").tooltip('show');
+            }
+        },
+        cancelEditEmail() {
+            this.newEmail = this.userInfo.user.email;
+            this.authingEmail = false;
+            this.editingEmail = false;
+        },
     }
 }
 </script>
 
-<style scoped>
-
+<style>
     /* The sidebar menu */
     .sidebar {
       height: 100%; /* 100% Full-height */
