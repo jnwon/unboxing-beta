@@ -176,6 +176,7 @@
                 this.setUserInfo({
                   id: userId,
                   name: userInfoObj.name,
+                  email: userInfoObj.email,
                   tutorial: 0
                 });
 

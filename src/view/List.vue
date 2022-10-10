@@ -5,7 +5,7 @@
         <h3 v-if="fetching"><i class="fa fa-spinner fa-spin"/></h3>
 
         <setting-panel :userInfo="{user: ub_user, fingerPrint: ub_fingerPrint}"
-                        @saveNewUserName="saveNewUserName" @saveNewEmail="saveNewEmail"/>
+                        @saveNewUserName="saveNewUserName" @saveNewEmail="saveNewEmail" @logOut="logOut"/>
 
         <div id="main" class="row">
             <div class="col-sm-2"></div>
@@ -155,7 +155,7 @@ export default {
         ...mapState(['ub_user', 'ub_tags', 'ub_fingerPrint'])
     },
     methods: {
-        ...mapMutations(['setTags', 'setTutorialStep', 'setUserName', 'setEmail']),
+        ...mapMutations(['setUserInfo', 'setTags', 'setFingerPrint', 'setTutorialStep', 'setUserName', 'setEmail']),
         reload() {
             location.reload();
         },
@@ -441,6 +441,14 @@ export default {
                 console.log(e);
                 alert(e);
             }
+        },
+        logOut() {
+            this.setUserInfo(null);
+            this.setTags(null);
+            this.setFingerPrint('');
+            localStorage.removeItem('vuex');
+            sessionStorage.clear();
+            location.href='/bye';
         },
 
         async querying() {

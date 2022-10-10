@@ -1,11 +1,14 @@
 {
-    "info-version" : "0.10",
+    "info-version" : "0.12",
     "info-version-label" : "Unboxing 버전 : ",
     "info-contact" : "개발자 연락처 : ",
     "info-oss" : "오픈소스 라이선스",
 
     "setting-email-register" : "이메일 등록",
     "setting-placeholder-authnumber" : "인증번호",
+    "setting-logout" : "로그아웃",
+    "setting-backup" : "계정 백업",
+    "setting-remove" : "계정 삭제",
     
     "default-tag-1" : "일상",
     "default-tag-2" : "공부",
@@ -62,5 +65,11 @@
     "alert-editbox" : "박스 글의 개별 수정은 현재 불가능합니다.\n부모 포스트의 수정을 통해 박스 내용을 수정해주세요.",
     "alert-setting-authnumber" : "입력하신 이메일로 인증번호가 전송되었습니다.\n인증번호를 입력해주세요.",
     "alert-setting-wrongauth" : "인증번호를 잘못 입력하셨습니다.",
-    "confitm-delete" : "정말로 삭제할까요?"
+    "alert-setting-noemail" : "등록된 이메일로 계정정보가 백업됩니다.\n이메일 등록을 먼저 진행해주세요.",
+    "alert-setting-backup" : "등록된 이메일로 계정정보가 전송되었습니다.\n이메일을 확인해주세요.",
+    "confitm-delete" : "정말로 삭제할까요?",
+    "confirm-logout" : "계정을 백업하지 않으셨다면 현재 계정으로 다시 로그인할 수 없습니다.\n로그아웃을 진행하시겠습니까?",
+    "confirm-remove" : "계정을 삭제하면 복구할 수 없으며 게시물이 모두 삭제됩니다.\n삭제를 진행하시겠습니까?",
+
+    "goodbye" : "다음에 또 만나요!"
 }

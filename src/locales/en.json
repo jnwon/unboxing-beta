@@ -1,11 +1,14 @@
 {
-    "info-version" : "0.10",
+    "info-version" : "0.12",
     "info-version-label" : "Unboxing Version : ",
     "info-contact" : "To Developer : ",
     "info-oss" : "Open Source Licenses",
 
     "setting-email-register" : "Register E-mail",
     "setting-placeholder-authnumber" : "Auth Number",
+    "setting-logout" : "Log out",
+    "setting-backup" : "Backup Account",
+    "setting-remove" : "Remove Account",
 
     "default-tag-1" : "dailylife",
     "default-tag-2" : "learning",
@@ -61,5 +64,11 @@
     "alert-editbox" : "Modifying BOX itself is unavailable now.\nPlease edit this by modifying the parent post of this BOX.",
     "alert-setting-authnumber" : "An authentication number was sent to the E-mail you had entered.\nPlease fill the number in.",
     "alert-setting-wrongauth" : "This is wrong auth number.",
-    "confitm-delete" : "You really want to remove?"
+    "alert-setting-noemail" : "Account information would be backed up to registered E-mail.\nPlease register your E-mail first.",
+    "alert-setting-backup" : "Account information was sent to registered E-mail.\nPlease check your E-mail.",
+    "confitm-delete" : "You really want to remove?",
+    "confirm-logout" : "You cannot log-in with this account again unless you backed this account up.\nDo you really want to log out?",
+    "confirm-remove" : "You cannot recover this account and posts will be deleted if you remove the account.\nDo you really want to remove it?",
+
+    "goodbye" : "See you again!"
 }
