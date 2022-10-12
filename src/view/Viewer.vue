@@ -55,24 +55,9 @@
 import router from '@/router';
 import db from '@/db';
 import { mapState, mapMutations } from 'vuex';
-import { useMeta } from 'vue-meta'
 
 export default {
     name: 'view-Viewer',
-    setup () {
-        useMeta({ 
-            title: 'Some Page',
-            meta: [
-                {vmid: 'description', name: 'description', content: this.postContentsSummary},
-                {vmid: 'keywords', name: 'keywords', content: 'blog, socialblog'},
-                {vmid: 'og:type', name: 'og:type', content: 'article'},
-                {vmid: 'og:title', name: 'og:title', content: this.postTitle},
-                {vmid: 'og:description', name: 'og:description', content: this.postContentsSummary},
-                {vmid: 'og:url', name: 'og:url', content: 'unboxing-200c8.web.app'},
-                {vmid: 'og:image', name: 'og:image', content: '/src/assets/android-chrome-512x512.png'}
-            ]
-        })
-    },
     data() {
         return {
             // password: 0,
@@ -80,8 +65,6 @@ export default {
             lock: false,
             postTitle: '',
             postContents: '',
-            postContentsSummary: '',
-            postThumbImgUrl: '',
             postDateTime: '',
             postUserName: '',
             postUserId: '',
@@ -139,26 +122,10 @@ export default {
                 this.postTags = tags;
 
                 document.title = title;
-                this.postContentsSummary = window.$('#contentsArea').text().substring(0,20);
-                this.postThumbImgUrl = window.$('img:first').attr('src');
-
                 // var contentsText = window.$('#contentsArea').text().substring(0,20);
                 // window.$('head').append('<meta property="og:title" content="'+title+'">');
                 // window.$('head').append('<meta property="og:description" content="'+contentsText+'">');
                 // window.$('head').append('<meta property="og:image" content="/src/assets/android-chrome-512x512.png">');
-
-                // useMeta({
-                //     title: title,
-                //     meta: [
-                //         {vmid: 'description', name: 'description', content: contentsText},
-                //         {vmid: 'keywords', name: 'keywords', content: 'blog, socialblog'},
-                //         {vmid: 'og:type', name: 'og:type', content: 'article'},
-                //         {vmid: 'og:title', name: 'og:title', content: title},
-                //         {vmid: 'og:description', name: 'og:description', content: contentsText},
-                //         {vmid: 'og:url', name: 'og:url', content: 'unboxing-200c8.web.app'},
-                //         {vmid: 'og:image', name: 'og:image', content: '/src/assets/android-chrome-512x512.png'}
-                //     ]
-                // })
                 
                 if(this.postTags && this.ub_tags){
                     this.postTags.forEach((tag) => {

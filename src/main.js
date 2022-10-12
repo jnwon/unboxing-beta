@@ -3,7 +3,6 @@ import App from './App.vue'
 import router from './router'
 import store from './store'
 import i18n from '@/locales'
-import { createMetaManager } from 'vue-meta'
 import './registerServiceWorker'
 
 const app = createApp(App)
@@ -30,5 +29,4 @@ app.directive('popover', {
 app.use(router)
 app.use(store)
 app.use(i18n)
-app.use(createMetaManager());
 app.mount('#app')
