@@ -1,11 +1,21 @@
 <template>
+  <metainfo>
+    <template v-slot:title="{ content }">{{ content ? `${content} | SITE_NAME` : `SITE_NAME` }}</template>
+  </metainfo>
   <router-view/>
 </template>
 
 <script>
+import { useMeta } from 'vue-meta'
 
 export default {
-  name: 'App'
+  name: 'App',
+  setup () {
+    useMeta({
+      title: '',
+      htmlAttrs: { lang: 'ko', amp: true }
+    })
+  }
 }
 </script>
 
