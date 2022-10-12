@@ -421,7 +421,6 @@ export default {
         },
         openSetting() {
             window.$('#setting').css("width", "300px");
-            window.$('.elements').css("opacity", 1);
         },
         saveNewUserName(userName) {
             try {
