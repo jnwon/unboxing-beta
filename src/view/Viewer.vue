@@ -4,7 +4,7 @@
             <div class="col-sm-8">
                 <div class="row" style="height: auto; min-height: 85%;">
                     <h3 v-if="postTitle == ''"><i class="fa fa-spinner fa-spin"/></h3>
-                    <h3 style="text-align: left;">{{postTitle}}&nbsp;<span v-if="lock" style="color: green; font-size: medium;"><i class="fa fa-lock" style="position: relative; bottom: 2px"/></span></h3>
+                    <h3 id="post-title" style="text-align: left;">{{postTitle}}&nbsp;<span v-if="lock" style="color: green; font-size: medium;"><i class="fa fa-lock" style="position: relative; bottom: 2px"/></span></h3>
                     <div style="display: flex; justify-content: space-between;">
                         <span style="font-size:small; color:grey">{{postDateTime}}</span>
                         <span style="font-size:small; color:grey">{{postUserName}}({{postUserId}})</span>
@@ -25,6 +25,7 @@
                     <i v-if="postFingerPrint == this.ub_fingerPrint" class="fa fa-edit" @click="editPost()"/>
                     <i v-if="postFingerPrint == this.ub_fingerPrint" class="fa fa-trash" @click="deleteOk()" style="margin-left: 20%;"/>
                     <i v-else class="far fa-star" v-tooltip="$t('tooltip-developing')" style="margin-left: 20%;"/>
+                    <i v-if="isManager" class="fas fa-bullhorn" :style="'float: right; ' + (announcement? 'color: green' : '')" @click="toggleAnnuncement()"/>
                 </div>
                 <br/>
                 <div class="parent-contents" style="display:none" v-html="parentContents"></div>
@@ -62,8 +63,8 @@ export default {
     name: 'view-Viewer',
     data() {
         return {
-            // password: 0,
-            // passwordInput: '',
+            isManager: false,
+            announcement: false,
             lock: false,
             postTitle: '',
             postContents: '',
@@ -79,6 +80,9 @@ export default {
         }
     },
     created(){
+        if(this.ub_fingerPrint == process.env.VUE_APP_MANAGER_FINGERPRINT){
+            this.isManager = true;
+        }
         if(navigator.language != 'ko'){
             this.$i18n.locale = 'en'
         }
@@ -107,6 +111,7 @@ export default {
         try{
             await postRef.get().then((snapshot) => {
                 this.lock = snapshot.val().lock;
+                this.announcement = snapshot.val().announcement;
                 title = snapshot.val().title;
                 contents = snapshot.val().contents;
                 datetime = new Date(-snapshot.val().timestamp).toLocaleString();
@@ -172,7 +177,9 @@ export default {
                 }
 
                 window.$(document).on('click', "#kakaoshare", () => {
-                    var contentsText = window.$('#contentsArea').text().substring(0,20);
+                    var title = window.$('#post-title').text();
+                    var contentsText = window.$('#contentsArea').text();
+                    var description = contentsText.length > 20? contentsText.substring(0,20) + '..' : contentsText;
                     var imgurl = window.$('#contentsArea img:first').attr('src');
                     if(!imgurl){
                         imgurl = "https://unboxing-200c8.web.app/img/icons/android-chrome-maskable-512x512.png"
@@ -181,11 +188,12 @@ export default {
                     window.Kakao.Share.sendDefault({
                         objectType: 'feed',
                         content: {
-                            title: this.postTitle,
-                            description: contentsText,
+                            title: title,
+                            description: description,
                             imageUrl: imgurl,
                             link: {
-                                webUrl: location.href,
+                                mobileWebUrl: location.href,
+                                webUrl: location.href
                             },
                         },
                     });
@@ -271,6 +279,24 @@ export default {
             // else{
             //     alert('삭제 비밀번호가 틀렸습니다.');
             // }
+        },
+        async toggleAnnuncement() {
+            this.announcement = !this.announcement;
+            var updates = {};
+            if(this.children){
+                for(var key in this.children){
+                    updates['/postsWithContents/' + key + '/announcement'] = this.announcement;
+                    updates['/posts/' + key + '/announcement'] = this.announcement;
+                }
+            }
+            updates['/postsWithContents/' + this.$route.query.postId + '/announcement'] = this.announcement;
+            updates['/posts/' + this.$route.query.postId + '/announcement'] = this.announcement;
+            try{
+                await db.db.ref().update(updates);
+            } catch (e) {
+                console.log(e);
+                alert(e);
+            }
         }
 
     }

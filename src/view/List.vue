@@ -5,11 +5,21 @@
         <h3 v-if="fetching"><i class="fa fa-spinner fa-spin"/></h3>
 
         <setting-panel :userInfo="{user: ub_user, fingerPrint: ub_fingerPrint}"
-                        @saveNewUserName="saveNewUserName" @saveNewEmail="saveNewEmail" @logOut="logOut"/>
+                        @saveNewUserName="saveNewUserName" @saveNewEmail="saveNewEmail" @logOut="logOut" @setAnnouncement="setAnnouncement"/>
 
         <div id="main" class="row">
             <div class="col-sm-2"></div>
             <div class="col-sm-8">
+                <div class="list-group" v-if="!this.ub_user.noAnnouncement">
+                    <a v-for="(post, index) in announceData" :key="index" @click="moveToViewer(post.postId)" :id="post.postId" href="#" class="list-group-item" style="display: flex; justify-content: space-between;">
+                        <div class="announceTitle" style="text-align: left;">
+                            <span>{{post.title}}&nbsp;<i v-if="post.lock" class="fa fa-lock" style="color: green; font-size: smaller;"/></span>
+                        </div>
+                        <div class="announceMeta">
+                            <span :style="'font-size:small; color:' + (this.ub_user && post.userId == this.ub_user.id? 'coral' : 'lightgrey')">{{post.userName}}</span><span style="font-size:small; color:lightgrey"> | {{post.timeOffset}}</span>
+                        </div>
+                    </a>
+                </div>
                 <div class="list-group" v-popover:bottom="$t('tooltip-tutorial-4-3')">
                     <a v-for="(post, index) in postData" :key="index" @click="moveToViewer(post.postId)" :id="post.postId" href="#" class="list-group-item" style="display: flex; justify-content: space-between;">
                         <div class="postTitle" style="text-align: left;">
@@ -61,12 +71,14 @@ export default {
     components: { SettingPanel },
     data() {
         return {
+            isManager : false,
             fetching : true,
             myList : false,
             listView : true,
             editTag : false,
             currentTimestamp : 0,
             lastTimestamp : 0,
+            announceData: [],
             postData: [],
             MyData: [],
             myNextIndex: -1,
@@ -98,6 +110,9 @@ export default {
         }
     },
     created() {
+        if(this.ub_fingerPrint == process.env.VUE_APP_MANAGER_FINGERPRINT){
+            this.isManager = true;
+        }
         if(navigator.language != 'ko'){
             this.$i18n.locale = 'en'
         }
@@ -122,6 +137,27 @@ export default {
                 this.tags[filtersObj[key]] = true;
                 this.filters.push(filtersObj[key])
             }
+        }
+
+        try{
+            const postListRef = db.db.ref('posts');
+            await postListRef.orderByChild('userId').startAt(process.env.VUE_APP_MANAGER_USERID).endAt(process.env.VUE_APP_MANAGER_USERID).once("value", (snapshot) => {
+                var announcements = [];
+                snapshot.forEach((data) => {
+                    if(!data.val().temp && data.val().announcement){
+                        var dateTime = new Date(-data.val().timestamp).toLocaleString().split(" ");
+                        announcements.push({postId: data.key, title: data.val().title, userId: "", userName: data.val().userName, timeOffset: dateTime[0]+dateTime[1]+dateTime[2], lock: data.val().lock});
+                    }
+                })
+
+                var announcelen = announcements.length;
+                for(var i = announcelen-1; i >= 0; i--){
+                    this.announceData.push(announcements[i]);
+                }
+            });
+        } catch(e) {
+            console.log(e);
+            alert(e);
         }
 
         if(this.myList){
@@ -155,7 +191,7 @@ export default {
         ...mapState(['ub_user', 'ub_tags', 'ub_fingerPrint'])
     },
     methods: {
-        ...mapMutations(['setUserInfo', 'setTags', 'setFingerPrint', 'setTutorialStep', 'setUserName', 'setEmail']),
+        ...mapMutations(['setUserInfo', 'setTags', 'setFingerPrint', 'setTutorialStep', 'setUserName', 'setEmail', 'setNoAnnouncement']),
         reload() {
             location.reload();
         },
@@ -276,8 +312,14 @@ export default {
                         timeoffset = this.currentTimestamp + timestamp;
                         if(!data.val().temp){
                             if(!data.val().lock || (this.ub_user && data.val().userId == this.ub_user.id)){
-                                this.postData.push({postId: data.key, title: data.val().title, userId: data.val().userId, userName: data.val().userName, timeOffset: this.getLocaleTimeString(timeoffset), lock: data.val().lock});
-                                pushCount++;
+                                if(!this.isManager && (data.val().userId != process.env.VUE_APP_MANAGER_USERID)){
+                                    this.postData.push({postId: data.key, title: data.val().title, userId: data.val().userId, userName: data.val().userName, timeOffset: this.getLocaleTimeString(timeoffset), lock: data.val().lock});
+                                    pushCount++;
+                                }
+                                else if(this.isManager){
+                                    this.postData.push({postId: data.key, title: data.val().title, userId: data.val().userId, userName: data.val().userName, timeOffset: this.getLocaleTimeString(timeoffset), lock: data.val().lock});
+                                    pushCount++;
+                                }
                             }
                         }
                     })
@@ -315,8 +357,14 @@ export default {
                             timeoffset = this.currentTimestamp + timestamp;
                             if(!data.val().temp){
                                 if(!data.val().lock || (this.ub_user && data.val().userId == this.ub_user.id)){
-                                    this.postData.push({postId: data.key, title: data.val().title, userId: data.val().userId, userName: data.val().userName, timeOffset: this.getLocaleTimeString(timeoffset), lock: data.val().lock});
-                                    pushCount++;
+                                    if(!this.isManager && (data.val().userId != process.env.VUE_APP_MANAGER_USERID)){
+                                        this.postData.push({postId: data.key, title: data.val().title, userId: data.val().userId, userName: data.val().userName, timeOffset: this.getLocaleTimeString(timeoffset), lock: data.val().lock});
+                                        pushCount++;
+                                    }
+                                    else if(this.isManager){
+                                        this.postData.push({postId: data.key, title: data.val().title, userId: data.val().userId, userName: data.val().userName, timeOffset: this.getLocaleTimeString(timeoffset), lock: data.val().lock});
+                                        pushCount++;
+                                    }
                                 }
                             }
                         })
@@ -420,7 +468,7 @@ export default {
             }
         },
         openSetting() {
-            window.$('#setting').css("width", "300px");
+            window.$('#setting').css("width", "350px");
             window.$('.elements').css("opacity", 1);
         },
         saveNewUserName(userName) {
@@ -450,6 +498,10 @@ export default {
             localStorage.removeItem('vuex');
             sessionStorage.clear();
             location.href='/bye';
+        },
+        setAnnouncement() {
+            var announcment = this.ub_user.noAnnouncement
+            this.setNoAnnouncement(!announcment)
         },
 
         async querying() {
@@ -503,6 +555,21 @@ export default {
     text-overflow: ellipsis;
     white-space: nowrap;
     overflow: hidden;
+  }
+}
+
+.announceTitle {
+    max-width: 75%;
+}
+.announceMeta {
+    max-width: 25%;
+}
+@media screen and (max-width: 450px) {
+  .announceTitle {
+    max-width: 50%;
+  }
+  .announceMeta {
+    max-width: 50%;
   }
 }
 

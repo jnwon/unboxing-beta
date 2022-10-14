@@ -1,5 +1,5 @@
 {
-    "info-version" : "0.131",
+    "info-version" : "0.14",
     "info-version-label" : "Unboxing 버전 : ",
     "info-contact" : "개발자 연락처 : ",
     "info-oss" : "오픈소스 라이선스",
@@ -9,6 +9,8 @@
     "setting-logout" : "로그아웃",
     "setting-backup" : "계정 백업",
     "setting-remove" : "계정 삭제",
+    "setting-accouncement-no" : "공지 보이기",
+    "setting-accouncement-yes" : "공지 숨기기",
     
     "default-tag-1" : "일상",
     "default-tag-2" : "공부",

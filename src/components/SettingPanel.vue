@@ -20,6 +20,7 @@
                 <i class="fa fa-undo" style="margin-left: 10px; margin-right: 10px;" @click="cancelEditEmail()"></i>
             </div>
             <div style="display: flex;"><a href="javascript:void(0)" style="position:relative; left: 120px" v-tooltip="$t('tooltip-developing')">My Unboxing</a><a href="javascript:void(0)" style="position:absolute; right: 0px"><i class="fas fa-wrench"></i></a></div>
+            <a href="javascript:void(0)" @click="toggleAnnouncementView()"> {{ this.userInfo.user.noAnnouncement ? $t('setting-accouncement-no') : $t('setting-accouncement-yes') }} </a>
             <br/>
             <a href="javascript:void(0)" @click="logOut()">{{ $t('setting-logout') }}</a>
             <a href="javascript:void(0)" @click="backup()">{{ $t('setting-backup') }}</a>
@@ -206,6 +207,9 @@ export default {
                     alert(e);
                 }
             }
+        },
+        toggleAnnouncementView() {
+            this.$emit('setAnnouncement');
         }
     }
 }

@@ -1,5 +1,5 @@
 {
-    "info-version" : "0.131",
+    "info-version" : "0.14",
     "info-version-label" : "Unboxing Version : ",
     "info-contact" : "To Developer : ",
     "info-oss" : "Open Source Licenses",
@@ -9,6 +9,8 @@
     "setting-logout" : "Log out",
     "setting-backup" : "Backup Account",
     "setting-remove" : "Remove Account",
+    "setting-accouncement-no" : "Show Accouncement",
+    "setting-accouncement-yes" : "Hide Accouncement",
 
     "default-tag-1" : "dailylife",
     "default-tag-2" : "learning",

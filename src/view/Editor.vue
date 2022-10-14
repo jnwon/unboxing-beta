@@ -18,7 +18,8 @@
                 <i v-if="!isEditmode" class="fas fa-folder-open" @click="loadTempPosts()" v-popover:top="$t('tooltip-load-temp-fail')"/>
                 <i v-if="!isEditmode" class="fas fa-save" @click="submitPost(this.loadedTempPostId, true)" v-popover:top="$t('tooltip-save-temp')"/>
                 <i :class="submitting ? 'fa fa-spinner fa-spin' : 'fa fa-upload'" @click="submitPost(this.loadedTempPostId, false)" style="margin-left: 20%;" v-popover:top="$t('tooltip-tutorial-2-2')"/>
-                <i :class="lock? 'fa fa-lock' : 'fa fa-unlock'" :style="'float: right; ' + (lock? 'color: green' : '')" @click="toggleLock()"/>
+                <i v-if="isManager" class="fas fa-bullhorn" :style="'float: right; ' + (announcement? 'color: green' : '')" @click="toggleAnnuncement()"/>
+                <i v-else :class="lock? 'fa fa-lock' : 'fa fa-unlock'" :style="'float: right; ' + (lock? 'color: green' : '')" @click="toggleLock()"/>
             </div>
         </div>
         <div class="col-sm-1"></div>
@@ -62,6 +63,8 @@ export default {
         return {
             isEditmode : false,
             isEmpty : true,
+            isManager : false,
+            announcement : false,
             tempPosts : [],
             loadedTempPostId : null,
             submitting : false,
@@ -85,6 +88,12 @@ export default {
         if(!this.ub_user){
             location.href="/";
         }
+        else{
+            if(this.ub_fingerPrint == process.env.VUE_APP_MANAGER_FINGERPRINT){
+                this.isManager = true;
+            }
+        }
+
         if(navigator.language != 'ko'){
             this.$i18n.locale = 'en'
         }
@@ -226,6 +235,9 @@ export default {
         toggleLock() {
             this.lock = !this.lock;
         },
+        toggleAnnuncement() {
+            this.announcement = !this.announcement;
+        },
         removeTempPost(postId) {
             var updates = {};
             db.db.ref('posts/'+postId+'/children').get().then(async (snapshot) => {
@@ -271,6 +283,7 @@ export default {
                 window.$("#tempPosts").modal('hide');
                 await postRef.get().then((snapshot) => {
                     this.lock = snapshot.val().lock;
+                    this.announcement = snapshot.val().announcement;
                     title = snapshot.val().title;
                     contents = snapshot.val().contents;
                     fingerPrint = snapshot.val().fingerPrint;
@@ -313,6 +326,7 @@ export default {
         async submitPost(loadedTempPostId, isSavedForTemp) {
             var date = new Date();
             var boxLock = this.lock;
+            var announcement = this.announcement;
             var children = this.children;
             var boxUserInfo = this.ub_user;
             var boxFingerPrint = this.ub_fingerPrint;
@@ -359,6 +373,7 @@ export default {
                     contents: contents,
                     timestamp: timestamp,
                     lock: lock,
+                    announcement: announcement,
                     userId: userId,
                     userName: userName,
                     tags: tags,
@@ -369,6 +384,7 @@ export default {
                     title: title,
                     timestamp: timestamp,
                     lock: lock,
+                    announcement: announcement,
                     userId: userId,
                     userName: userName,
                     tags: tags,
@@ -404,6 +420,7 @@ export default {
                     contents: contents,
                     timestamp: this.isEditmode? this.postTimestamp : -date.getTime(),
                     lock: this.lock,
+                    announcement: this.announcement,
                     userId: this.ub_user.id,
                     userName: this.ub_user.name,
                     tags: selectedTags,
@@ -414,6 +431,7 @@ export default {
                     title: title,
                     timestamp: this.isEditmode? this.postTimestamp : -date.getTime(),
                     lock: this.lock,
+                    announcement: this.announcement,
                     userId: this.ub_user.id,
                     userName: this.ub_user.name,
                     tags: selectedTags,

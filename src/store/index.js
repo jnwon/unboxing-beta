@@ -17,6 +17,9 @@ export default createStore({
         setEmail(state, email) {
             state.ub_user.email = email;
         },
+        setNoAnnouncement(state, flag) {
+            state.ub_user.noAnnouncement = flag;
+        },
         setTutorialStep (state, step) {
             state.ub_user.tutorial = step;
         },
