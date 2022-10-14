@@ -16,7 +16,7 @@
       }
     },
     created() {
-      if(navigator.language != 'ko'){
+      if(navigator.language != 'ko' && navigator.language != 'ko-KR'){
           this.$i18n.locale = 'en'
       }
     },

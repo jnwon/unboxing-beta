@@ -10,7 +10,7 @@
         <div id="main" class="row">
             <div class="col-sm-2"></div>
             <div class="col-sm-8">
-                <div class="list-group" v-if="!this.ub_user.noAnnouncement">
+                <div class="list-group" v-if="!this.ub_user || !this.ub_user.noAnnouncement">
                     <a v-for="(post, index) in announceData" :key="index" @click="moveToViewer(post.postId)" :id="post.postId" href="#" class="list-group-item" style="display: flex; justify-content: space-between;">
                         <div class="announceTitle" style="text-align: left;">
                             <span>{{post.title}}&nbsp;<i v-if="post.lock" class="fa fa-lock" style="color: green; font-size: smaller;"/></span>
@@ -113,7 +113,7 @@ export default {
         if(this.ub_fingerPrint == process.env.VUE_APP_MANAGER_FINGERPRINT){
             this.isManager = true;
         }
-        if(navigator.language != 'ko'){
+        if(navigator.language != 'ko' && navigator.language != 'ko-KR'){
             this.$i18n.locale = 'en'
         }
     },

@@ -83,7 +83,7 @@ export default {
         if(this.ub_fingerPrint == process.env.VUE_APP_MANAGER_FINGERPRINT){
             this.isManager = true;
         }
-        if(navigator.language != 'ko'){
+        if(navigator.language != 'ko' && navigator.language != 'ko-KR'){
             this.$i18n.locale = 'en'
         }
     },
