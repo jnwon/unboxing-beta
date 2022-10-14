@@ -15,6 +15,7 @@
                     <br/>
                     <div style="text-align: left">
                         <span v-for="(tag, index) in this.postTags" :key="index" style="margin-right: 15px; font-size: large; color: orange"><b>#{{tag.name}}</b></span>
+                        <span><i class="fas fa-share-alt" v-mpopover:top="$t('tooltip-share-link')" v-bspopover:top="'<img id=\'kakaoshare\' src=\'./img/icons/kakaotalk.png\'/><i class=\'fa fa-link share\'>'"></i></span>
                         <a href="#" style="position:absolute; right: 5%"><i class="fa fa-angle-up"/></a>
                     </div>
                 </div>
@@ -55,6 +56,7 @@
 import router from '@/router';
 import db from '@/db';
 import { mapState, mapMutations } from 'vuex';
+import Clipboard from 'clipboard'
 
 export default {
     name: 'view-Viewer',
@@ -88,6 +90,19 @@ export default {
         var userName;
         var userIdDisplay;
         var tags;
+
+        var clipboard = new Clipboard('.fa-link', {
+            text: function() {
+                return location.href
+            }
+        });
+        clipboard.on('success', function(e) {
+            console.log(e);
+        });
+        clipboard.on('error', function(e) {
+            console.log(e);
+        });
+
         const postRef = db.db.ref('postsWithContents/'+this.$route.query.postId);
         try{
             await postRef.get().then((snapshot) => {
@@ -155,6 +170,32 @@ export default {
                     window.$(".fa-arrow-left").tooltip('destroy');
                     window.$("#contentsArea").tooltip('destroy');
                 }
+
+                window.$(document).on('click', "#kakaoshare", () => {
+                    var contentsText = window.$('#contentsArea').text().substring(0,20);
+                    var imgurl = window.$('#contentsArea img:first').attr('src');
+                    if(!imgurl){
+                        imgurl = "https://unboxing-200c8.web.app/img/icons/android-chrome-maskable-512x512.png"
+                    }
+                    window.$('.fa-share-alt').popover('hide');
+                    window.Kakao.Share.sendDefault({
+                        objectType: 'feed',
+                        content: {
+                            title: this.postTitle,
+                            description: contentsText,
+                            imageUrl: imgurl,
+                            link: {
+                                webUrl: location.href,
+                            },
+                        },
+                    });
+                })
+
+                window.$(document).on('click', ".fa-link", () => {
+                    window.$('.fa-share-alt').popover('hide');
+                    window.$(".fa-share-alt").tooltip('show');
+                    setTimeout(() => {window.$(".fa-share-alt").tooltip('hide');}, 3000)
+                })
             }
         } catch (e) {
             console.log(e);
@@ -259,5 +300,19 @@ iframe {
     white-space: nowrap;
     overflow: hidden;
 }
+
+.share {
+    font-size: large;
+    margin-right: 10px;
+    /* display: none; */
+}
+
+#kakaoshare {
+    width: 25px;
+    margin-bottom: 5px;
+    margin-right: 10px;
+}
+
+
 </style>
   

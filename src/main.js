@@ -26,6 +26,28 @@ app.directive('popover', {
     }
 })
 
+app.directive('mpopover', {
+    mounted(el, binding) {
+        window.$(el).tooltip({
+            title: binding.value,
+            placement: binding.arg,
+            trigger: 'manual'
+        })
+    }
+})
+
+app.directive('bspopover', {
+    mounted(el, binding) {
+        window.$(el).popover({
+            content: binding.value,
+            placement: binding.arg,
+            html: true
+        })
+    }
+})
+
+window.Kakao.init('7760cbd5eb273bd5f06a0ede6eba6a86'); 
+
 app.use(router)
 app.use(store)
 app.use(i18n)

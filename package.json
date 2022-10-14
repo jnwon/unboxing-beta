@@ -10,13 +10,13 @@
   "dependencies": {
     "@emailjs/browser": "^3.7.0",
     "axios": "^0.27.2",
+    "clipboard": "^2.0.11",
     "core-js": "^3.25.3",
     "crypto-js": "^4.1.1",
     "firebase": "^9.10.0",
     "register-service-worker": "^1.7.2",
     "vue": "^3.2.13",
     "vue-i18n": "^9.2.2",
-    "vue-meta": "^3.0.0-alpha.10",
     "vue-router": "^4.1.5",
     "vuex": "^4.0.2",
     "vuex-persistedstate": "^4.1.0"

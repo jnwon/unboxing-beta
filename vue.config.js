@@ -1,8 +1,6 @@
 const { defineConfig } = require('@vue/cli-service')
 module.exports = defineConfig({
-  transpileDependencies: [
-    'vue-meta',
-  ],
+  transpileDependencies: true,
   pwa: {
     manifestOptions: {
         name: "Unboxing",

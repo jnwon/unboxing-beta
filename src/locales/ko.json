@@ -1,5 +1,5 @@
 {
-    "info-version" : "0.12",
+    "info-version" : "0.131",
     "info-version-label" : "Unboxing 버전 : ",
     "info-contact" : "개발자 연락처 : ",
     "info-oss" : "오픈소스 라이선스",
@@ -44,6 +44,7 @@
     "tooltip-setting-auth-input" : "인증번호를 입력하세요.",
     "tooltip-setting-email" : "이메일이 등록되었습니다.",
     "tooltip-developing": "준비중입니다!",
+    "tooltip-share-link" : "포스트 주소가 복사되었습니다.",
     "tooltip-load-temp-fail" : "임시저장글이 없습니다!",
     "tooltip-save-temp" : "임시저장되었습니다.",
     "modal-temp-posts-header" : "임시저장글",
