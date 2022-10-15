@@ -19,7 +19,7 @@
                 <i class="fa fa-check" style="margin-left: 10px; margin-right: 10px;" @click="confirmAuth()"></i>
                 <i class="fa fa-undo" style="margin-left: 10px; margin-right: 10px;" @click="cancelEditEmail()"></i>
             </div>
-            <div style="display: flex;"><a href="javascript:void(0)" style="position:relative; left: 170px" v-tooltip="$t('tooltip-developing')">My Unboxing</a><a href="javascript:void(0)" style="position:absolute; right: 0px"><i class="fas fa-wrench"></i></a></div>
+            <div style="display: flex;"><a :href="'/' + this.userInfo.user.id" style="position:relative; left: 170px">My Unboxing</a><a href="javascript:void(0)" style="position:absolute; right: 0px" v-tooltip="$t('tooltip-developing')"><i class="fas fa-wrench"></i></a></div>
             <a href="javascript:void(0)" @click="toggleAnnouncementView()"> {{ this.userInfo.user.noAnnouncement ? $t('setting-accouncement-no') : $t('setting-accouncement-yes') }} </a>
             <br/>
             <a href="javascript:void(0)" @click="logOut()">{{ $t('setting-logout') }}</a>

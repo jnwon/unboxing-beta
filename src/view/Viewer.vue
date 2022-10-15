@@ -7,7 +7,7 @@
                     <h3 id="post-title" style="text-align: left;">{{postTitle}}&nbsp;<span v-if="lock" style="color: green; font-size: medium;"><i class="fa fa-lock" style="position: relative; bottom: 2px"/></span></h3>
                     <div style="display: flex; justify-content: space-between;">
                         <span style="font-size:small; color:grey">{{postDateTime}}</span>
-                        <span style="font-size:small; color:grey">{{postUserName}}({{postUserId}})</span>
+                        <span style="font-size:small; color:grey">{{postUserName}}({{postUserId}})&nbsp;<a :href="'/'+postUserIdFull"><i class="fa fa-home"></i></a></span>
                     </div>
                     <br/>
                     <div class="alert alert-warning" v-if="parent" style="text-align:left; height: 55px;"><span style="font-size:x-large; margin-left: 10px;">⌜ </span><a :href="'/viewer?postId='+parent" style="color:#8a6d3b; font-size:medium; position:relative; bottom: 8px;">{{parentTitle}}</a></div>
@@ -71,6 +71,7 @@ export default {
             postDateTime: '',
             postUserName: '',
             postUserId: '',
+            postUserIdFull: '',
             postTags: {},
             postFingerPrint: '',
             parent: null,
@@ -93,6 +94,7 @@ export default {
         var datetime;
         var userName;
         var userIdDisplay;
+        var userIdFull;
         var tags;
 
         var clipboard = new Clipboard('.fa-link', {
@@ -116,7 +118,8 @@ export default {
                 contents = snapshot.val().contents;
                 datetime = new Date(-snapshot.val().timestamp).toLocaleString();
                 userName = snapshot.val().userName;
-                userIdDisplay = snapshot.val().userId.slice(snapshot.val().userId.length-4);
+                userIdFull = snapshot.val().userId;
+                userIdDisplay = userIdFull.slice(snapshot.val().userId.length-4);
                 tags = snapshot.val().tags;
                 // this.password = snapshot.val().password;
                 this.postFingerPrint = snapshot.val().fingerPrint;
@@ -139,6 +142,7 @@ export default {
                 this.postDateTime = datetime;
                 this.postUserName = userName;
                 this.postUserId = userIdDisplay;
+                this.postUserIdFull = userIdFull;
                 this.postTags = tags;
 
                 document.title = title;
@@ -233,7 +237,12 @@ export default {
             if(this.ub_user && this.ub_user.tutorial == 3){
                 this.setTutorialStep(4);
             }
-            router.push({name: 'List', query: {postId: this.$route.query.postId}});
+            if(this.$route.query.userId){
+                router.push({path: '/'+this.$route.query.userId, query: {postId: this.$route.query.postId}});    
+            }
+            else{
+                router.push({name: 'List', query: {postId: this.$route.query.postId}});
+            }
         },
         editPost() {
             if(this.parent){

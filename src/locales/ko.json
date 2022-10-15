@@ -1,5 +1,5 @@
 {
-    "info-version" : "0.141",
+    "info-version" : "0.15",
     "info-version-label" : "Unboxing 버전 : ",
     "info-contact" : "개발자 연락처 : ",
     "info-oss" : "오픈소스 라이선스",
@@ -32,6 +32,7 @@
     "welcome-8" : "생성한 계정정보는 브라우저의",
     "welcome-9" : "'인터넷 사용 기록 삭제'를 하기 전까지",
     "welcome-10": "유효합니다!",
+    "unboxing-name" : "님의",
 
     "tooltip-tutorial-1" : "포스트 하나 작성해볼까요?",
     "tooltip-tutorial-2-1" : "메뉴막대의 박스 아이콘을 눌러서 박스를 생성해보세요.",
@@ -47,6 +48,7 @@
     "tooltip-setting-email" : "이메일이 등록되었습니다.",
     "tooltip-developing": "준비중입니다!",
     "tooltip-share-link" : "포스트 주소가 복사되었습니다.",
+    "tooltip-unboxing-link" : "Unboxing 주소가 복사되었습니다.",
     "tooltip-load-temp-fail" : "임시저장글이 없습니다!",
     "tooltip-save-temp" : "임시저장되었습니다.",
     "modal-temp-posts-header" : "임시저장글",

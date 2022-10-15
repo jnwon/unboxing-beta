@@ -1,6 +1,7 @@
 <template>
     <div class="container">
         <h2><i class="fas fa-box-open" @click="reload()"/></h2>
+        <h3 v-if="$route.params.userId"> {{ ownerName + $t('unboxing-name') }} &nbsp;Unboxing </h3>
         <br/>
         <h3 v-if="fetching"><i class="fa fa-spinner fa-spin"/></h3>
 
@@ -10,7 +11,7 @@
         <div id="main" class="row">
             <div class="col-sm-2"></div>
             <div class="col-sm-8">
-                <div class="list-group" v-if="!this.ub_user || !this.ub_user.noAnnouncement">
+                <div class="list-group" v-if="!$route.params.userId && (!this.ub_user || !this.ub_user.noAnnouncement)">
                     <a v-for="(post, index) in announceData" :key="index" @click="moveToViewer(post.postId)" :id="post.postId" href="#" class="list-group-item" style="display: flex; justify-content: space-between;">
                         <div class="announceTitle" style="text-align: left;">
                             <span>{{post.title}}&nbsp;<i v-if="post.lock" class="fa fa-lock" style="color: green; font-size: smaller;"/></span>
@@ -34,15 +35,17 @@
                 <div v-show="!fetching">
                     <div style="text-align: justify; padding: 10px">
                         <span style="color:lightgrey; margin-right: 20px"><i class="fa fa-star" v-tooltip="$t('tooltip-developing')"/></span>
-                        <span v-if="this.ub_user" style="margin-right: 20px" @click="toggleListMode()" id="myBtn" v-popover:top="$t('tooltip-tutorial-4-1')"><b>{{myList? 'ALL' : 'MY'}}</b></span>
+                        <span v-if="this.ub_user && !$route.params.userId" style="margin-right: 20px" @click="toggleListMode()" id="myBtn" v-popover:top="$t('tooltip-tutorial-4-1')"><b>{{myList? 'ALL' : 'MY'}}</b></span>
+                        <span v-if="$route.params.userId" style="margin-right: 20px" @click="goGome()"><i class="fa fa-home"></i></span>
                         <!-- <span style="margin-right: 20px" @click="toggleListType()"><i :class="listView? 'fa fa-list' : 'fa fa-newspaper'"/></span> -->
-                        <span v-show="myList" @click="openSetting()"><i class="fas fa-cog"/></span>
+                        <span v-if="$route.params.userId"><i class="fas fa-share-alt" v-mpopover:top="$t('tooltip-unboxing-link')" v-bspopover:top="'<img id=\'kakaoshare\' src=\'./img/icons/kakaotalk.png\'/><i class=\'fa fa-link share\'>'"></i></span>
+                        <span v-show="myList && !$route.params.userId" @click="openSetting()"><i class="fas fa-cog"/></span>
                         <span style="position:absolute; right: 48%"><i @click="fetchNext(10)" class="fas fa-plus-circle"/></span>
                         <span style="position:absolute; right: 5%" id="fa-pen" v-popover:top="$t('tooltip-tutorial-1')"><i @click="moveToEditor()" class="fa fa-pen"/></span>
                     </div>
                     <div v-show="myList && !editTag" style="text-align:left; margin-left: 10px">
-                        <span v-for="(ub_tag, index) in this.ub_tags" :key="index" :id="index == 0 ? 'tagList' : ''" v-popover:top="index == 0 ? $t('tooltip-tutorial-4-2') : ''" :style="'margin-right: 15px; font-size: large;' + (tags[ub_tag.id]? 'color: orange' : 'color: lightgrey')" @click="toggleTag(ub_tag.id)"><b>#{{ub_tag.name}}</b></span>
-                        <i class="fa fa-edit" @click="editTags()"></i>
+                        <span v-for="(ub_tag, index) in ubTags" :key="index" :id="index == 0 ? 'tagList' : ''" v-popover:top="index == 0 ? $t('tooltip-tutorial-4-2') : ''" :style="'margin-right: 15px; font-size: large;' + (tags[ub_tag.id]? 'color: orange' : 'color: lightgrey')" @click="toggleTag(ub_tag.id)"><b>#{{ub_tag.name}}</b></span>
+                        <i v-if="!$route.params.userId" class="fa fa-edit" @click="editTags()"></i>
                     </div>
                     <div v-show="editTag" style="text-align:left; margin-left: 10px">
                         <span v-for="(tag, index) in this.tagsEditing" :key="index" style="margin-right: 15px"><input type="text" v-model="tag.name" style="width: 20%; margin-right: 5px; margin-bottom: 10px;"/><i class="fas fa-times-circle" @click="deleteTags(index, tag.id)"/></span>
@@ -64,6 +67,7 @@
 import router from '@/router';
 import db from '@/db';
 import { mapMutations, mapState } from 'vuex';
+import Clipboard from 'clipboard'
 import SettingPanel from '@/components/SettingPanel.vue';
 
 export default {
@@ -72,8 +76,10 @@ export default {
     data() {
         return {
             isManager : false,
+            ownerName : '',
             fetching : true,
             myList : false,
+            userId : '',
             listView : true,
             editTag : false,
             currentTimestamp : 0,
@@ -82,6 +88,7 @@ export default {
             postData: [],
             MyData: [],
             myNextIndex: -1,
+            ubTags: [],
             tags: [],
             tagsEditing : [],
             tagsRemoved : [],
@@ -121,15 +128,44 @@ export default {
 
         document.title = "unboxing-beta";
 
+        if(this.$route.params.userId){
+            try{
+                await db.db.ref('users/' + this.$route.params.userId + '/name').get().then(async (snapshot) => {
+                    if(snapshot.exists){
+                        this.userId = this.$route.params.userId;
+                        this.ownerName = snapshot.val();
+                        this.myList = true;
+                        if(!this.$route.query.postId){
+                            sessionStorage.clear();
+                        }
+                        await db.db.ref('users/' + this.$route.params.userId + '/tags').get().then((snapshot) => {
+                            snapshot.forEach((data) => {
+                            this.ubTags.push({id: data.key, name: data.val().name});
+                            })
+                        });
+                    }
+                })
+            } catch(e) {
+                console.log(e);
+                alert(e);
+            }
+        }
+        else{
+            this.userId = this.ub_user? this.ub_user.id : '';
+            this.ubTags = this.ub_tags;
+        }
+
         history.replaceState({}, null, location.pathname);
 
-        if(this.ub_user){
-            this.ub_tags.forEach((tag) => {
+        if(this.ub_user || this.$route.params.userId){
+            this.ubTags.forEach((tag) => {
                 this.tags[tag.id] = 0;
             })
         }
 
-        this.myList = sessionStorage.getItem('myList') == "true" ? true : false;
+        if(!this.$route.params.userId){
+            this.myList = sessionStorage.getItem('myList') == "true" ? true : false;
+        }
         var filtersObjStr = sessionStorage.getItem('filters');
         if(filtersObjStr){
             var filtersObj = JSON.parse(filtersObjStr)
@@ -167,6 +203,35 @@ export default {
             await this.fetchAll();
         }
 
+        new Clipboard('.fa-link', {
+            text: function() {
+                return location.href
+            }
+        });
+
+        window.$(document).on('click', "#kakaoshare", () => {
+            var title = this.ownerName + '의 Unboxing';
+            var imgurl = "https://unboxing-200c8.web.app/img/icons/android-chrome-maskable-512x512.png"
+            window.$('.fa-share-alt').popover('hide');
+            window.Kakao.Share.sendDefault({
+                objectType: 'feed',
+                content: {
+                    title: title,
+                    imageUrl: imgurl,
+                    link: {
+                        mobileWebUrl: location.href,
+                        webUrl: location.href
+                    },
+                },
+            });
+        })
+
+        window.$(document).on('click', ".fa-link", () => {
+            window.$('.fa-share-alt').popover('hide');
+            window.$(".fa-share-alt").tooltip('show');
+            setTimeout(() => {window.$(".fa-share-alt").tooltip('hide');}, 3000)
+        })
+
         if(this.$route.query.postId && (!this.ub_user || this.ub_user.tutorial != 4)){
             window.$("#"+this.$route.query.postId).focus();
         }
@@ -199,7 +264,7 @@ export default {
             if(this.ub_user && this.ub_user.tutorial == 4){
                 this.setTutorialStep(5);
             }
-            router.push({name: 'Viewer', query: {postId: postId}});
+            router.push({name: 'Viewer', query: {postId: postId, userId: this.userId}});
         },
         moveToEditor() {
             if(this.ub_user && this.ub_user.tutorial == 1){
@@ -240,11 +305,11 @@ export default {
         editTags() {
             this.editTag = true;
             this.tagsEditing = [];
-            this.ub_tags.forEach((tag) => {
+            this.ubTags.forEach((tag) => {
                 this.tagsEditing.push({id: tag.id, name: tag.name});
             })
             this.tagsRemoved = [];
-            this.ub_tags.forEach((tag) => {
+            this.ubTags.forEach((tag) => {
                 this.tags[tag.id] = 0;
             })
             this.filters = [];
@@ -391,7 +456,7 @@ export default {
             var timestamp;
             var timeoffset;
             try{
-                await postListRef.orderByChild('userId').startAt(this.ub_user.id).endAt(this.ub_user.id).once("value", (snapshot) => {
+                await postListRef.orderByChild('userId').startAt(this.userId).endAt(this.userId).once("value", (snapshot) => {
                     snapshot.forEach((data) => {
                         if(!data.val().temp){
                             timestamp = data.val().timestamp;
@@ -407,11 +472,15 @@ export default {
                                     })
                                 }
                                 if(tagMatched){
-                                    this.MyData.push({postId: data.key, title: data.val().title, userId: data.val().userId, userName: data.val().userName, timeOffset: this.getLocaleTimeString(timeoffset), lock: data.val().lock});
+                                    if(!data.val().lock || (this.ub_user && data.val().userId == this.ub_user.id)){
+                                        this.MyData.push({postId: data.key, title: data.val().title, userId: data.val().userId, userName: data.val().userName, timeOffset: this.getLocaleTimeString(timeoffset), lock: data.val().lock});
+                                    }
                                 }
                             }
                             else{
-                                this.MyData.push({postId: data.key, title: data.val().title, userId: data.val().userId, userName: data.val().userName, timeOffset: this.getLocaleTimeString(timeoffset), lock: data.val().lock});
+                                if(!data.val().lock || (this.ub_user && data.val().userId == this.ub_user.id)){
+                                    this.MyData.push({postId: data.key, title: data.val().title, userId: data.val().userId, userName: data.val().userName, timeOffset: this.getLocaleTimeString(timeoffset), lock: data.val().lock});
+                                }
                             }
                         }
                     })
@@ -503,6 +572,10 @@ export default {
             var announcment = this.ub_user.noAnnouncement
             this.setNoAnnouncement(!announcment)
         },
+        goGome() {
+            sessionStorage.clear();
+            location.href="/List"
+        },
 
         async querying() {
             var updates = {};
@@ -571,6 +644,18 @@ export default {
   .announceMeta {
     max-width: 50%;
   }
+}
+
+.share {
+    font-size: large;
+    margin-right: 10px;
+    /* display: none; */
+}
+
+#kakaoshare {
+    width: 25px;
+    margin-bottom: 5px;
+    margin-right: 10px;
 }
 
 </style>

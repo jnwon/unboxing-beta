@@ -25,6 +25,11 @@ export default createRouter({
             component: List
         },
         {
+            path: '/:userId',
+            name: 'MyList',
+            component: List
+        },
+        {
             path: '/editor',
             name: 'Editor',
             component: Editor

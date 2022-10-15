@@ -1,5 +1,5 @@
 {
-    "info-version" : "0.141",
+    "info-version" : "0.15",
     "info-version-label" : "Unboxing Version : ",
     "info-contact" : "To Developer : ",
     "info-oss" : "Open Source Licenses",
@@ -32,6 +32,7 @@
     "welcome-8" : "Your account is",
     "welcome-9" : "available until you run",
     "welcome-10": "'Clear browsing data' of your browser!",
+    "unboxing-name" : "'s",
 
     "tooltip-tutorial-1" : "Shall we post something?",
     "tooltip-tutorial-2-1" : "Make a BOX by clicking the box-icon on the menu bar.",
@@ -47,6 +48,7 @@
     "tooltip-setting-email" : "E-mail has been registered.",
     "tooltip-developing": "Developing now!",
     "tooltip-share-link" : "Post's URL has been copied.",
+    "tooltip-unboxing-link" : "Unboxing's URL has been copied.",
     "tooltip-load-temp-fail" : "No temporarily saved post!",
     "tooltip-save-temp" : "Temporarily saved.",
     "modal-temp-posts-header" : "Temporarily saved posts",
