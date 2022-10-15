@@ -175,8 +175,7 @@ export default {
                 ['para', ['ul', 'ol', 'paragraph']],
                 ['table', ['table']],
                 ['insert', ['link', 'picture', 'video']],
-                ['view', ['undo', 'redo']],
-                // ['view', ['undo', 'redo', 'codeview']],
+                this.isManager? ['view', ['undo', 'redo', 'codeview']] : ['view', ['undo', 'redo']],
             ],
             buttons: {
                 box: BoxButton

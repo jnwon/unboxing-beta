@@ -1,7 +1,7 @@
 <template>
     <div class="container">
         <h2><i class="fas fa-box-open" @click="reload()"/></h2>
-        <h3 v-if="$route.params.userId"> {{ ownerName + $t('unboxing-name') }} &nbsp;Unboxing </h3>
+        <h3 v-if="$route.params.userId && !fetching"> {{ ownerName + $t('unboxing-name') }} &nbsp;Unboxing </h3>
         <br/>
         <h3 v-if="fetching"><i class="fa fa-spinner fa-spin"/></h3>
 
@@ -13,7 +13,7 @@
             <div class="col-sm-8">
                 <div class="list-group" v-if="!$route.params.userId && (!this.ub_user || !this.ub_user.noAnnouncement)">
                     <a v-for="(post, index) in announceData" :key="index" @click="moveToViewer(post.postId)" :id="post.postId" href="#" class="list-group-item" style="display: flex; justify-content: space-between;">
-                        <div class="announceTitle" style="text-align: left;">
+                        <div class="announceTitle" :style="'text-align: left; ' + (post.postId == '-NELJ6iKT-aFCiDYIQIQ' ? 'color: coral' : '')">
                             <span>{{post.title}}&nbsp;<i v-if="post.lock" class="fa fa-lock" style="color: green; font-size: smaller;"/></span>
                         </div>
                         <div class="announceMeta">
@@ -203,6 +203,11 @@ export default {
             await this.fetchAll();
         }
 
+        if(window.Kakao.isInitialized()){
+            window.Kakao.cleanup();
+        }
+        window.Kakao.init('7760cbd5eb273bd5f06a0ede6eba6a86'); 
+
         new Clipboard('.fa-link', {
             text: function() {
                 return location.href
@@ -264,7 +269,7 @@ export default {
             if(this.ub_user && this.ub_user.tutorial == 4){
                 this.setTutorialStep(5);
             }
-            router.push({name: 'Viewer', query: {postId: postId, userId: this.userId}});
+            router.push({name: 'Viewer', query: {postId: postId, userId: this.$route.params.userId ? this.userId : ''}});
         },
         moveToEditor() {
             if(this.ub_user && this.ub_user.tutorial == 1){

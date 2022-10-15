@@ -46,8 +46,6 @@ app.directive('bspopover', {
     }
 })
 
-window.Kakao.init('7760cbd5eb273bd5f06a0ede6eba6a86'); 
-
 app.use(router)
 app.use(store)
 app.use(i18n)

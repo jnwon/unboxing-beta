@@ -6,7 +6,7 @@
                     <h3 v-if="postTitle == ''"><i class="fa fa-spinner fa-spin"/></h3>
                     <h3 id="post-title" style="text-align: left;">{{postTitle}}&nbsp;<span v-if="lock" style="color: green; font-size: medium;"><i class="fa fa-lock" style="position: relative; bottom: 2px"/></span></h3>
                     <div style="display: flex; justify-content: space-between;">
-                        <span style="font-size:small; color:grey">{{postDateTime}}</span>
+                        <span style="font-size:small; color:grey;">{{postDateTime}}<a href="#disqus_thread" style="margin-left: 5px"><i class="fas fa-comment-dots"></i></a></span>
                         <span style="font-size:small; color:grey">{{postUserName}}({{postUserId}})&nbsp;<a :href="'/'+postUserIdFull"><i class="fa fa-home"></i></a></span>
                     </div>
                     <br/>
@@ -28,6 +28,7 @@
                     <i v-if="isManager" class="fas fa-bullhorn" :style="'float: right; ' + (announcement? 'color: green' : '')" @click="toggleAnnuncement()"/>
                 </div>
                 <br/>
+                <div id="disqus_thread"></div>
                 <div class="parent-contents" style="display:none" v-html="parentContents"></div>
         </div>
         <div class="col-sm-2"></div>
@@ -97,6 +98,11 @@ export default {
         var userIdFull;
         var tags;
 
+        if(window.Kakao.isInitialized()){
+            window.Kakao.cleanup();
+        }
+        window.Kakao.init('7760cbd5eb273bd5f06a0ede6eba6a86'); 
+
         var clipboard = new Clipboard('.fa-link', {
             text: function() {
                 return location.href
@@ -108,6 +114,13 @@ export default {
         clipboard.on('error', function(e) {
             console.log(e);
         });
+
+        (function() { // DON'T EDIT BELOW THIS LINE
+            var d = document, s = d.createElement('script');
+            s.src = 'https://unboxing-1.disqus.com/embed.js';
+            s.setAttribute('data-timestamp', +new Date());
+            (d.head || d.body).appendChild(s);
+        })();
 
         const postRef = db.db.ref('postsWithContents/'+this.$route.query.postId);
         try{
