@@ -22,7 +22,7 @@
                     </a>
                 </div>
                 <div class="list-group" v-popover:bottom="$t('tooltip-tutorial-4-3')">
-                    <a v-for="(post, index) in postData" :key="index" @click="moveToViewer(post.postId)" :id="post.postId" href="#" class="list-group-item" style="display: flex; justify-content: space-between;">
+                    <a v-for="(post, index) in postData" :key="index" @click="moveToViewer(post.postId, post.userId)" :id="post.postId" href="#" class="list-group-item" style="display: flex; justify-content: space-between;">
                         <div class="postTitle" style="text-align: left;">
                             <span>{{post.title}}&nbsp;<i v-if="post.lock" class="fa fa-lock" style="color: green; font-size: smaller;"/></span>
                         </div>
@@ -265,11 +265,11 @@ export default {
         reload() {
             location.reload();
         },
-        moveToViewer(postId) {
+        moveToViewer(postId, ownerId) {
             if(this.ub_user && this.ub_user.tutorial == 4){
                 this.setTutorialStep(5);
             }
-            router.push({name: 'Viewer', query: {postId: postId, userId: this.$route.params.userId ? this.userId : ''}});
+            router.push({name: 'Viewer', query: {postId: postId, ownerId: ownerId, userId: this.$route.params.userId ? this.userId : ''}});
         },
         moveToEditor() {
             if(this.ub_user && this.ub_user.tutorial == 1){

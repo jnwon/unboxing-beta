@@ -4,6 +4,9 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <meta property="og:title" content="Unboxing">
+    <meta property="og:description" content="소셜 블로그 서비스 Unboxing입니다 :D">
+    <meta property="og:image" content="https://unboxing-200c8.web.app/img/icons/android-chrome-maskable-512x512.png">
     <link rel="icon" href="<%= BASE_URL %>favicon.ico">
     <title><%= htmlWebpackPlugin.options.title %></title>
     <!-- include libraries(jQuery, bootstrap) -->
@@ -28,3 +31,41 @@
     <!-- built files will be auto injected -->
   </body>
 </html>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+<script>
+  const firebaseConfig = {
+    // ...
+    // The value of `databaseURL` depends on the location of the database
+    databaseURL: "https://unboxing-200c8-default-rtdb.asia-southeast1.firebasedatabase.app/",
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+
+  function searchParam(key) {
+    return new URLSearchParams(location.search).get(key);
+  };
+
+  var disqus_config = function () {
+      this.callbacks.onNewComment.push(function(comment){
+        var notiListRef = db.ref('notifications/' + searchParam('ownerId'));
+        var newNotiRef = notiListRef.push();
+        var newNotiKey = newNotiRef.key;
+        var date = new Date();
+        try {
+          newNotiRef.set({
+            timestamp: -date.getTime(),
+            postId: searchParam('postId'),
+            comment: comment.text,
+            read: false
+          });
+        } catch(e) {
+          console.log(e);
+          alert(e);
+        }
+      })
+  };
+</script>

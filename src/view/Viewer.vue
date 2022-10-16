@@ -6,7 +6,7 @@
                     <h3 v-if="postTitle == ''"><i class="fa fa-spinner fa-spin"/></h3>
                     <h3 id="post-title" style="text-align: left;">{{postTitle}}&nbsp;<span v-if="lock" style="color: green; font-size: medium;"><i class="fa fa-lock" style="position: relative; bottom: 2px"/></span></h3>
                     <div style="display: flex; justify-content: space-between;">
-                        <span style="font-size:small; color:grey;">{{postDateTime}}<a href="#disqus_thread" style="margin-left: 5px"><i class="fas fa-comment-dots"></i></a></span>
+                        <span style="font-size:small; color:grey;">{{postDateTime}}<a :href="postUrl+'#disqus_thread'" style="margin-left: 5px"><i class="fas fa-comment-dots"></i></a></span>
                         <span style="font-size:small; color:grey">{{postUserName}}({{postUserId}})&nbsp;<a :href="'/'+postUserIdFull"><i class="fa fa-home"></i></a></span>
                     </div>
                     <br/>
@@ -78,7 +78,8 @@ export default {
             parent: null,
             children: {},
             parentTitle : '',
-            parentContents: ''
+            parentContents: '',
+            postUrl: ''
         }
     },
     created(){
@@ -114,6 +115,8 @@ export default {
         clipboard.on('error', function(e) {
             console.log(e);
         });
+
+        this.postUrl = location.href;
 
         (function() { // DON'T EDIT BELOW THIS LINE
             var d = document, s = d.createElement('script');
@@ -196,7 +199,7 @@ export default {
                 window.$(document).on('click', "#kakaoshare", () => {
                     var title = window.$('#post-title').text();
                     var contentsText = window.$('#contentsArea').text();
-                    var description = contentsText.length > 20? contentsText.substring(0,20) + '..' : contentsText;
+                    var description = contentsText.length > 40? contentsText.substring(0,40) + '..' : contentsText;
                     var imgurl = window.$('#contentsArea img:first').attr('src');
                     if(!imgurl){
                         imgurl = "https://unboxing-200c8.web.app/img/icons/android-chrome-maskable-512x512.png"
