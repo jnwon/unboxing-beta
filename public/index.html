@@ -51,20 +51,25 @@
 
   var disqus_config = function () {
       this.callbacks.onNewComment.push(function(comment){
-        var notiListRef = db.ref('notifications/' + searchParam('ownerId'));
-        var newNotiRef = notiListRef.push();
-        var newNotiKey = newNotiRef.key;
-        var date = new Date();
-        try {
-          newNotiRef.set({
-            timestamp: -date.getTime(),
-            postId: searchParam('postId'),
-            comment: comment.text,
-            read: false
-          });
-        } catch(e) {
-          console.log(e);
-          alert(e);
+        var commenId = sessionStorage.getItem('commentId')
+        if(commenId != comment.id){
+          sessionStorage.setItem('commentId', comment.id);
+          var notiListRef = db.ref('notifications/' + searchParam('ownerId'));
+          var newNotiRef = notiListRef.push();
+          var newNotiKey = newNotiRef.key;
+          var date = new Date();
+          try {
+            newNotiRef.set({
+              commentId: comment.id,
+              timestamp: -date.getTime(),
+              postId: searchParam('postId'),
+              comment: comment.text,
+              read: false
+            });
+          } catch(e) {
+            console.log(e);
+            alert(e);
+          }
         }
       })
   };

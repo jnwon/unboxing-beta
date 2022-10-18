@@ -25,7 +25,7 @@
             <a href="javascript:void(0)" @click="logOut()">{{ $t('setting-logout') }}</a>
             <a href="javascript:void(0)" @click="backup()">{{ $t('setting-backup') }}</a>
             <a href="javascript:void(0)" style="color:crimson" @click="remove()">{{ $t('setting-remove') }}</a>
-            <div style="display: flex;"><a href="javascript:void(0)" @click="closeSetting()" style="position:relative; left: 230px"><i class="fa fa-arrow-left"/></a><a href="javascript:void(0)" style="position:absolute; right: 0px"><i class="fas fa-info-circle" onclick="$('#info').modal('show')"></i></a></div>
+            <div style="display: flex;"><a href="javascript:void(0)" @click="closeSetting()" style="position:relative; left: 200px"><i class="fa fa-arrow-left"/></a><a href="javascript:void(0)" style="position:absolute; padding-left: 8px; right: 40px" @click="openNoti()"><i class="fas fa-bell"></i></a><a href="javascript:void(0)" style="position:absolute; padding-left: 8px; right: 0px"><i class="fas fa-info-circle" onclick="$('#info').modal('show')"></i></a></div>
         </div>
     </div>
 
@@ -94,6 +94,12 @@ export default {
         closeSetting() {
             window.$('#setting').css("width", 0);
             window.$('.elements').css("opacity", 0);
+        },
+        openNoti() {
+            window.$('#setting').css("width", 0);
+            window.$('.elements').css("opacity", 0);
+            window.$('#noti').css("width", "300px");
+            window.$('.elements-right').css("opacity", 1);
         },
         editUserName() {
             this.editingUsername = true;

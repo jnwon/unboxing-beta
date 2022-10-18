@@ -7,6 +7,7 @@
 
         <setting-panel :userInfo="{user: ub_user, fingerPrint: ub_fingerPrint}"
                         @saveNewUserName="saveNewUserName" @saveNewEmail="saveNewEmail" @logOut="logOut" @setAnnouncement="setAnnouncement"/>
+        <!-- <noti-panel :userInfo="{user: ub_user, fingerPrint: ub_fingerPrint}"></noti-panel> -->
 
         <div id="main" class="row">
             <div class="col-sm-2"></div>
@@ -69,6 +70,7 @@ import db from '@/db';
 import { mapMutations, mapState } from 'vuex';
 import Clipboard from 'clipboard'
 import SettingPanel from '@/components/SettingPanel.vue';
+// import NotiPanel from '@/components/NotiPanel.vue';
 
 export default {
     name: 'view-List',

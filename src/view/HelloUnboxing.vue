@@ -79,9 +79,10 @@
         try {
           var userId = this.ub_user.id;
           var tutorial = this.ub_user.tutorial;
+          var noAnnouncement = this.ub_user.noAnnouncement;
           await db.db.ref('users/' + userId).get().then((snapshot) => {
             console.log(snapshot.val().name);
-            this.setUserInfo({id: userId, name: snapshot.val().name, email: snapshot.val().email, tutorial: tutorial})
+            this.setUserInfo({id: userId, name: snapshot.val().name, email: snapshot.val().email, lastTimestampOfNoti: snapshot.val().lastTimestampOfNoti, tutorial: tutorial, noAnnouncement: noAnnouncement})
           })
           var tags = [];
           await db.db.ref('users/' + userId + '/tags').get().then((snapshot) => {
@@ -177,6 +178,7 @@
                   id: userId,
                   name: userInfoObj.name,
                   email: userInfoObj.email,
+                  lastTimestampOfNoti : userInfoObj.lastTimestampOfNoti,
                   tutorial: 0
                 });
 

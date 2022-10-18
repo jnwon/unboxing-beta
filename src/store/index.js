@@ -4,6 +4,7 @@ import createPersistedState from 'vuex-persistedstate';
 export default createStore({
     state: {
         ub_user: null,
+        ub_noti: [],
         ub_tags: null,
         ub_fingerPrint: '',
     },
@@ -22,6 +23,12 @@ export default createStore({
         },
         setTutorialStep (state, step) {
             state.ub_user.tutorial = step;
+        },
+        setLastTimestampOfNoti (state, timestamp) {
+            state.ub_user.lastTimestampOfNoti = timestamp;
+        },
+        setNoti(state, notis) {
+            state.ub_noti = notis;
         },
         setTags(state, tags) {
             state.ub_tags = tags;
