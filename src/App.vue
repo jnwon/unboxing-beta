@@ -1,6 +1,6 @@
 <template>
   <noti-panel :userInfo="{user: ub_user, fingerPrint: ub_fingerPrint}"></noti-panel>
-  <a href="javascript:void(0)" id="notiShortCut" @click="openNotiPanel()"><i class="fas fa-bell"/><span class="badge" style="font-size:x-small; margin-bottom: 23px;">2</span></a>
+  <a href="javascript:void(0)" id="notiShortCut" style="opacity: 0" @click="openNotiPanel()"><i class="fas fa-bell"/><span class="badge" style="font-size:x-small; margin-bottom: 23px;">{{unread}}</span></a>
   <router-view/>
 </template>
 
@@ -16,6 +16,7 @@ export default {
     return {
       notifications: [],
       lastTimestampOfNoti: 0,
+      unread: 0,
       ref: null,
       interval: null
     }
@@ -24,9 +25,15 @@ export default {
       ...mapState(['ub_user', 'ub_noti'])
   },
   mounted() {
+    window.$('#notiShortCut').hide();
     if(this.ub_user){
       this.lastTimestampOfNoti = this.ub_user.lastTimestampOfNoti? this.ub_user.lastTimestampOfNoti : 0;
       this.notifications = this.ub_noti;
+      this.notifications.forEach((comment) => {
+        if(!comment.read){
+          this.unread++;
+        }
+      })
       this.ref = db.db.ref('/notifications/' + this.ub_user.id);
       this.interval = setInterval(this.fetchNotis, 1000);
     }
@@ -37,6 +44,8 @@ export default {
   methods: {
     ...mapMutations(['setNoti', 'setLastTimestampOfNoti']),
     openNotiPanel() {
+      window.$('#notiShortCut').hide();
+      window.$('#notiShortCut').css("opacity", 0)
       window.$('#setting').css("width", 0);
       window.$('.elements').css("opacity", 0);
       window.$('#noti').css("width", "300px");
@@ -53,8 +62,17 @@ export default {
                 this.lastTimestampOfNoti = data.val().timestamp;
                 timestampSave = false;
               }
-                notis.push({commentId: data.key, postId: data.val().postId, comment: data.val().comment, timestamp: data.val().timestamp});
+              notis.push({commentId: data.key, postId: data.val().postId, postTitle: data.val().postTitle, comment: data.val().comment, timestamp: data.val().timestamp, read: data.val().read});
+              this.unread++;
             })
+            if(!timestampSave){
+              window.$('#notiShortCut').show();
+              window.$('#notiShortCut').animate({opacity: 1}, 'fast');
+              window.$('#notiShortCut').animate({opacity: 0}, 'fast');
+              window.$('#notiShortCut').animate({opacity: 1}, 'fast');
+              window.$('#notiShortCut').animate({opacity: 0}, 'fast');
+              window.$('#notiShortCut').animate({opacity: 1}, 'fast');
+            }
             this.setLastTimestampOfNoti(this.lastTimestampOfNoti);
             this.notifications = notis.concat(this.notifications);
             this.setNoti(this.notifications);

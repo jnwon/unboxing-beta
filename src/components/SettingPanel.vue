@@ -96,6 +96,8 @@ export default {
             window.$('.elements').css("opacity", 0);
         },
         openNoti() {
+            window.$('#notiShortCut').hide();
+            window.$('#notiShortCut').css("opacity", 0)
             window.$('#setting').css("width", 0);
             window.$('.elements').css("opacity", 0);
             window.$('#noti').css("width", "300px");
