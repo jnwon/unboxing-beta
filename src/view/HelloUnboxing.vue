@@ -178,7 +178,7 @@
                   id: userId,
                   name: userInfoObj.name,
                   email: userInfoObj.email,
-                  lastTimestampOfNoti : userInfoObj.lastTimestampOfNoti,
+                  lastTimestampOfNoti : 0,
                   tutorial: 0
                 });
 

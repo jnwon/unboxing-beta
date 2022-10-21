@@ -30,6 +30,9 @@ export default createStore({
         setNoti(state, notis) {
             state.ub_noti = notis;
         },
+        setNotiRead(state, index) {
+            state.ub_noti[index].read = true;
+        },
         setTags(state, tags) {
             state.ub_tags = tags;
         },

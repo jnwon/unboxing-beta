@@ -106,7 +106,7 @@ export default {
 
         var clipboard = new Clipboard('.fa-link', {
             text: function() {
-                return location.href
+                return location.href.split('&loginId')[0]
             }
         });
         clipboard.on('success', function(e) {
@@ -212,8 +212,8 @@ export default {
                             description: description,
                             imageUrl: imgurl,
                             link: {
-                                mobileWebUrl: location.href,
-                                webUrl: location.href
+                                mobileWebUrl: location.href.split('&loginId')[0],
+                                webUrl: location.href.split('&loginId')[0]
                             },
                         },
                     });

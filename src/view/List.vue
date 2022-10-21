@@ -183,8 +183,17 @@ export default {
                 var announcements = [];
                 snapshot.forEach((data) => {
                     if(!data.val().temp && data.val().announcement){
-                        var dateTime = new Date(-data.val().timestamp).toLocaleString().split(" ");
-                        announcements.push({postId: data.key, title: data.val().title, userId: "", userName: data.val().userName, timeOffset: dateTime[0]+dateTime[1]+dateTime[2], lock: data.val().lock});
+                        var dateTime = '';
+                        var timeOffset = '';
+                        if(this.$i18n.locale == 'ko'){
+                            dateTime = new Date(-data.val().timestamp).toLocaleString().split(" ");
+                            timeOffset = dateTime[0]+dateTime[1]+dateTime[2];
+                        }
+                        else {
+                            dateTime = new Date(-data.val().timestamp).toLocaleString().split(",");
+                            timeOffset = dateTime[0];
+                        }
+                        announcements.push({postId: data.key, title: data.val().title, userId: "", userName: data.val().userName, timeOffset: timeOffset, lock: data.val().lock});
                     }
                 })
 
@@ -544,6 +553,8 @@ export default {
             }
         },
         openSetting() {
+            window.$('#noti').css("width", 0);
+            window.$('.elements-right').css("opacity", 0);
             window.$('#setting').css("width", "350px");
             window.$('.elements').css("opacity", 1);
         },

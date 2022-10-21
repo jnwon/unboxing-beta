@@ -6,13 +6,16 @@
                     <span>{{$t('noti-noitem')}}</span>
                 </div>
                 <div v-else class="panel-group" style="float: right; width: 90%; padding-right: 30px; opacity: 0.7;">
-                    <div v-for="(noti, index) in notiRendered" :key="index" @click="openNotiPost(noti.postId)" :class="noti.read? 'panel panel-default' : 'panel panel-info'">
-                        <div class="panel-heading">{{ noti.postTitle }}</div>
-                        <div class="panel-body"> ㄴ <a class="notis" href="javascript:void(0)">{{ noti.comment }}</a></div>
+                    <div v-for="(noti, index) in notiRendered" :key="index" @click="openNotiPost(index, noti.commentId, noti.postId)" class="panel panel-info" :style="noti.read? 'opacity: 0.3' : ''">
+                        <div class="panel-heading" style="padding: 5px 10px 5px 10px; display: flex; justify-content: space-between;"><span class="panel-heading-title" style="width: 70%">{{ noti.postTitle }}</span> <span style="font-size:smaller; padding-top: 2px;"> {{ noti.timeoffset }} &nbsp;<a href="javascript:void(0)" @click.prevent.stop="removeNoti(noti.commentId)"><i class="fa fa-times"/></a></span></div>
+                        <div class="panel-body" style="padding: 10px 15px 10px 15px"> ㄴ <a class="notis" href="javascript:void(0)">{{ noti.comment }}</a></div>
                     </div>
                 </div>
             </div>
-            <div style="display: flex;"><a class="btns" href="javascript:void(0)" @click="closeNoti()" style="position:relative; left: 20px"><i class="fa fa-arrow-right"/></a><a class="btns" href="javascript:void(0)" style="padding-left: 20px"><i class="fas fa-cog" onclick="$('#notiSetting').modal('show')"/></a></div>
+            <div style="display: flex;">
+                <a class="btns" href="javascript:void(0)" @click="closeNoti()" style="position:relative; left: 20px"><i class="fa fa-arrow-right"/></a>
+                <!-- <a class="btns" href="javascript:void(0)" style="padding-left: 20px"><i class="fas fa-cog" onclick="$('#notiSetting').modal('show')"/></a> -->
+            </div>
         </div>
     </div>
 
@@ -33,7 +36,8 @@
 </template>
 
 <script>
-// import db from '@/db';
+import db from '@/db';
+import { mapMutations } from 'vuex';
 
 export default {
     name: 'Noti-Panel',
@@ -66,21 +70,31 @@ export default {
         });
     },
     methods: {
+        ...mapMutations(['setNotiRead', 'setNoti']),
         notiRendering() {
             this.notiRendered = [];
             var currentTimestamp = new Date().getTime();
             this.noti.forEach((item) => {
                 var timeoffset = currentTimestamp + item.timestamp;
-                this.notiRendered.push({postId: item.postId, postTitle: item.postTitle, comment: item.comment, timeoffset: this.getLocaleTimeString(timeoffset), read: item.read})
+                this.notiRendered.push({commentId: item.commentId, postId: item.postId, postTitle: item.postTitle, comment: item.comment, timestamp: item.timestamp, timeoffset: this.getLocaleTimeString(timeoffset), read: item.read})
             })
         },
         closeNoti() {
             window.$('#noti').css("width", 0);
             window.$('.elements-right').css("opacity", 0);
         },
-        openNotiPost(postId) {
-            //읽음처리
-            this.$router.push({name: 'Viewer', query: {postId: postId, ownerId: this.user.id, loginId: this.user.id}});
+        async openNotiPost(index, commentId, postId) {
+            this.setNotiRead(index);
+            await db.db.ref('notifications/' + this.user.id + '/' + commentId + '/read').set(true);
+            location.href = '/viewer?postId=' + postId + '&ownerId=' + this.user.id + '&loginId=' + this.user.id + '#disqus_thread'
+        },
+        async removeNoti(commentId) {
+            var filtered = this.notiRendered.filter((data) => {
+                return data.commentId != commentId;
+            });
+            await this.setNoti(filtered);
+            await db.db.ref('notifications/' + this.user.id + '/' + commentId).set(null);
+            this.notiRendering();
         },
         getLocaleTimeString(timeoffset) {
             var timeoffsetSeconds = (timeoffset / 1000).toFixed();
@@ -157,13 +171,21 @@ export default {
         transition: 0.2s;
     }
 
+    #notiSections {
+        height: auto;
+        max-height: 90%;
+        margin-bottom: 10px;
+        overflow: auto;
+    }
+
     @media screen and (max-width: 450px) {
         #notiSections{
-            height: auto;
-            min-height: 85%;
+            height: 90%;
+            margin-bottom: 10px;
+            overflow: auto;
         }
     }
-    .panel-heading {
+    .panel-heading-title, .panel-body {
         text-overflow: ellipsis;
         white-space: nowrap;
         overflow: hidden;

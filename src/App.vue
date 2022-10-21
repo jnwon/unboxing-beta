@@ -1,5 +1,5 @@
 <template>
-  <noti-panel :noti="ub_noti" :user="ub_user"></noti-panel>
+  <noti-panel :noti="ub_noti" :user="ub_user" ref="notiPanel"></noti-panel>
   <a href="javascript:void(0)" id="notiShortCut" style="opacity: 0" @click="openNotiPanel()"><i class="fas fa-bell"/><span class="badge" style="font-size:x-small; margin-bottom: 23px;">{{unread}}</span></a>
   <router-view/>
 </template>
@@ -53,7 +53,7 @@ export default {
     },
     fetchNotis() {
       try {
-        this.ref.orderByChild('timestamp').endBefore(this.lastTimestampOfNoti).once("value", (snapshot) => {
+        this.ref.orderByChild('timestamp').endBefore(this.lastTimestampOfNoti).once("value", async (snapshot) => {
           if(snapshot.exists()){
             var timestampSave = true;
             var notis = [];
@@ -65,7 +65,7 @@ export default {
               notis.push({commentId: data.key, postId: data.val().postId, postTitle: data.val().postTitle, comment: data.val().comment, timestamp: data.val().timestamp, read: data.val().read});
               this.unread++;
             })
-            if(!timestampSave){
+            if(!timestampSave && window.$('.sidebar-right').css('width') == '0px'){
               window.$('#notiShortCut').show();
               window.$('#notiShortCut').animate({opacity: 1}, 'fast');
               window.$('#notiShortCut').animate({opacity: 0}, 'fast');
@@ -74,8 +74,10 @@ export default {
               window.$('#notiShortCut').animate({opacity: 1}, 'fast');
             }
             this.setLastTimestampOfNoti(this.lastTimestampOfNoti);
+            db.db.ref('users/' + this.ub_user.id + '/lastTimestampOfNoti').set(this.lastTimestampOfNoti);
             this.notifications = notis.concat(this.notifications);
-            this.setNoti(this.notifications);
+            await this.setNoti(this.notifications);
+            this.$refs.notiPanel.notiRendering();
           }
         })
       } catch(e) {
