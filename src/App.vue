@@ -1,5 +1,5 @@
 <template>
-  <noti-panel :userInfo="{user: ub_user, fingerPrint: ub_fingerPrint}"></noti-panel>
+  <noti-panel :noti="ub_noti" :user="ub_user"></noti-panel>
   <a href="javascript:void(0)" id="notiShortCut" style="opacity: 0" @click="openNotiPanel()"><i class="fas fa-bell"/><span class="badge" style="font-size:x-small; margin-bottom: 23px;">{{unread}}</span></a>
   <router-view/>
 </template>

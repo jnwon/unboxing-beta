@@ -84,6 +84,7 @@ export default {
         this.ossList.push({libraryName: 'bootstrap', version: '3.4.1', _license: 'MIT'});
         this.ossList.push({libraryName: 'jquery', version: '3.6.0', _license: 'MIT'});
         this.ossList.push({libraryName: 'summernote', version: '0.8.18', _license: 'MIT'});
+        this.ossList.push({libraryName: 'attrchange', version: '2.0.1', _license: 'GPL-3.0'});
 
         if(this.userInfo.user){
             this.newUserName = this.userInfo.user.name;

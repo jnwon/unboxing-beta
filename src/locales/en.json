@@ -11,6 +11,7 @@
     "setting-remove" : "Remove Account",
     "setting-accouncement-no" : "Show Accouncement",
     "setting-accouncement-yes" : "Hide Accouncement",
+    "noti-noitem" : "There is no new notification.",
 
     "default-tag-1" : "dailylife",
     "default-tag-2" : "learning",

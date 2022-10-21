@@ -17,6 +17,7 @@
     <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.0.0/kakao.min.js"
     integrity="sha384-PFHeU/4gvSH8kpvhrigAPfZGBDPs372JceJq3jAXce11bVA6rMvGWzvP4fMQuBGL" crossorigin="anonymous"></script>
     <script id="dsq-count-scr" src="//unboxing-1.disqus.com/count.js" async></script>
+    <script src="./attrchange.js"></script>
 
     <!-- include summernote css/js -->
     <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote.min.css" rel="stylesheet">
@@ -52,24 +53,26 @@
   var disqus_config = function () {
       this.callbacks.onNewComment.push(function(comment){
         var commenId = sessionStorage.getItem('commentId')
-        if(commenId != comment.id){
-          sessionStorage.setItem('commentId', comment.id);
-          var notiListRef = db.ref('notifications/' + searchParam('ownerId'));
-          var newNotiRef = notiListRef.push();
-          var newNotiKey = newNotiRef.key;
-          var date = new Date();
-          try {
-            newNotiRef.set({
-              commentId: comment.id,
-              timestamp: -date.getTime(),
-              postId: searchParam('postId'),
-              postTitle: document.title,
-              comment: comment.text,
-              read: false
-            });
-          } catch(e) {
-            console.log(e);
-            alert(e);
+        if(searchParam('ownerId') != searchParam('loginId')){
+          if(commenId != comment.id){
+            sessionStorage.setItem('commentId', comment.id);
+            var notiListRef = db.ref('notifications/' + searchParam('ownerId'));
+            var newNotiRef = notiListRef.push();
+            var newNotiKey = newNotiRef.key;
+            var date = new Date();
+            try {
+              newNotiRef.set({
+                commentId: comment.id,
+                timestamp: -date.getTime(),
+                postId: searchParam('postId'),
+                postTitle: document.title,
+                comment: comment.text,
+                read: false
+              });
+            } catch(e) {
+              console.log(e);
+              alert(e);
+            }
           }
         }
       })
