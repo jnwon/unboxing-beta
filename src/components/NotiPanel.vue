@@ -86,7 +86,7 @@ export default {
         async openNotiPost(index, commentId, postId) {
             this.setNotiRead(index);
             await db.db.ref('notifications/' + this.user.id + '/' + commentId + '/read').set(true);
-            location.href = '/viewer?postId=' + postId + '&ownerId=' + this.user.id + '&loginId=' + this.user.id + '#disqus_thread'
+            location.href = '/viewer?postId=' + postId + '&ownerId=' + this.user.id + '#disqus_thread'
         },
         async removeNoti(commentId) {
             var filtered = this.notiRendered.filter((data) => {

@@ -140,6 +140,7 @@ export default {
                         if(!this.$route.query.postId){
                             sessionStorage.clear();
                         }
+                        sessionStorage.setItem('currentUnboxingOwnerId', this.$route.params.userId);
                         await db.db.ref('users/' + this.$route.params.userId + '/tags').get().then((snapshot) => {
                             snapshot.forEach((data) => {
                             this.ubTags.push({id: data.key, name: data.val().name});
@@ -280,7 +281,7 @@ export default {
             if(this.ub_user && this.ub_user.tutorial == 4){
                 this.setTutorialStep(5);
             }
-            router.push({name: 'Viewer', query: {postId: postId, ownerId: ownerId, loginId: this.ub_user? this.ub_user.id : '', userId: this.$route.params.userId ? this.userId : ''}});
+            router.push({name: 'Viewer', query: {postId: postId, ownerId: ownerId}});
         },
         moveToEditor() {
             if(this.ub_user && this.ub_user.tutorial == 1){

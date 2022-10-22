@@ -106,7 +106,7 @@ export default {
 
         var clipboard = new Clipboard('.fa-link', {
             text: function() {
-                return location.href.split('&loginId')[0]
+                return location.href
             }
         });
         clipboard.on('success', function(e) {
@@ -212,8 +212,8 @@ export default {
                             description: description,
                             imageUrl: imgurl,
                             link: {
-                                mobileWebUrl: location.href.split('&loginId')[0],
-                                webUrl: location.href.split('&loginId')[0]
+                                mobileWebUrl: location.href,
+                                webUrl: location.href
                             },
                         },
                     });
@@ -250,11 +250,12 @@ export default {
     methods: {
         ...mapMutations(['setTutorialStep']),
         moveToList() {
+            var ownerId = sessionStorage.getItem('currentUnboxingOwnerId');
             if(this.ub_user && this.ub_user.tutorial == 3){
                 this.setTutorialStep(4);
             }
-            if(this.$route.query.userId){
-                router.push({path: '/'+this.$route.query.userId, query: {postId: this.$route.query.postId}});    
+            if(ownerId){
+                router.push({path: '/'+ownerId, query: {postId: this.$route.query.postId}});    
             }
             else{
                 router.push({name: 'List', query: {postId: this.$route.query.postId}});

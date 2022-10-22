@@ -52,8 +52,13 @@
 
   var disqus_config = function () {
       this.callbacks.onNewComment.push(function(comment){
+        var loginId = null;
         var commenId = sessionStorage.getItem('commentId')
-        if(searchParam('ownerId') != searchParam('loginId')){
+        var vuex = localStorage.getItem('vuex');
+        if(vuex){
+          loginId = JSON.parse(vuex).ub_user.id;
+        }
+        if(searchParam('ownerId') != loginId){
           if(commenId != comment.id){
             sessionStorage.setItem('commentId', comment.id);
             var notiListRef = db.ref('notifications/' + searchParam('ownerId'));
