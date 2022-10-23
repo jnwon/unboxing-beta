@@ -13,7 +13,7 @@
             <div class="col-sm-2"></div>
             <div class="col-sm-8">
                 <div class="list-group" v-if="!$route.params.userId && (!this.ub_user || !this.ub_user.noAnnouncement)">
-                    <a v-for="(post, index) in announceData" :key="index" @click="moveToViewer(post.postId)" :id="post.postId" href="#" class="list-group-item" style="display: flex; justify-content: space-between;">
+                    <a v-for="(post, index) in announceData" :key="index" @click="moveToViewer(post.postId, post.userId)" :id="post.postId" href="#" class="list-group-item" style="display: flex; justify-content: space-between;">
                         <div class="announceTitle" :style="'text-align: left; ' + (post.postId == '-NELJ6iKT-aFCiDYIQIQ' ? 'color: coral' : '')">
                             <span>{{post.title}}&nbsp;<i v-if="post.lock" class="fa fa-lock" style="color: green; font-size: smaller;"/></span>
                         </div>
@@ -66,7 +66,7 @@
 
 <script>
 import router from '@/router';
-import db from '@/db';
+import fb from '@/firebase';
 import { mapMutations, mapState } from 'vuex';
 import Clipboard from 'clipboard'
 import SettingPanel from '@/components/SettingPanel.vue';
@@ -125,6 +125,20 @@ export default {
         if(navigator.language != 'ko' && navigator.language != 'ko-KR'){
             this.$i18n.locale = 'en'
         }
+        if(this.ub_user) {
+            fb.messaging.getToken({ vapidKey: process.env.VUE_APP_FCMKEY }).then((currentToken) => {
+            if (currentToken) {
+                fb.db.ref('users/' + this.ub_user.id + '/fcmToken').set(currentToken);
+            } else {
+                Notification.requestPermission().then((permission) => {
+                if (permission === 'granted') {
+                    console.log('Notification permission granted.');    
+                }});
+            }
+            }).catch((err) => {
+                console.log('An error occurred while retrieving token. ', err);
+            });
+        }
     },
     async mounted() {
 
@@ -132,8 +146,8 @@ export default {
 
         if(this.$route.params.userId){
             try{
-                await db.db.ref('users/' + this.$route.params.userId + '/name').get().then(async (snapshot) => {
-                    if(snapshot.exists){
+                await fb.db.ref('users/' + this.$route.params.userId + '/name').get().then(async (snapshot) => {
+                    if(snapshot.exists()){
                         this.userId = this.$route.params.userId;
                         this.ownerName = snapshot.val();
                         this.myList = true;
@@ -141,7 +155,7 @@ export default {
                             sessionStorage.clear();
                         }
                         sessionStorage.setItem('currentUnboxingOwnerId', this.$route.params.userId);
-                        await db.db.ref('users/' + this.$route.params.userId + '/tags').get().then((snapshot) => {
+                        await fb.db.ref('users/' + this.$route.params.userId + '/tags').get().then((snapshot) => {
                             snapshot.forEach((data) => {
                             this.ubTags.push({id: data.key, name: data.val().name});
                             })
@@ -179,7 +193,7 @@ export default {
         }
 
         try{
-            const postListRef = db.db.ref('posts');
+            const postListRef = fb.db.ref('posts');
             await postListRef.orderByChild('userId').startAt(process.env.VUE_APP_MANAGER_USERID).endAt(process.env.VUE_APP_MANAGER_USERID).once("value", (snapshot) => {
                 var announcements = [];
                 snapshot.forEach((data) => {
@@ -194,7 +208,7 @@ export default {
                             dateTime = new Date(-data.val().timestamp).toLocaleString().split(",");
                             timeOffset = dateTime[0];
                         }
-                        announcements.push({postId: data.key, title: data.val().title, userId: "", userName: data.val().userName, timeOffset: timeOffset, lock: data.val().lock});
+                        announcements.push({postId: data.key, title: data.val().title, userId: process.env.VUE_APP_MANAGER_USERID, userName: data.val().userName, timeOffset: timeOffset, lock: data.val().lock});
                     }
                 })
 
@@ -352,10 +366,10 @@ export default {
             }
             else {
                 this.tagsEditing.forEach(async (tag) => {
-                    var tagListRef = db.db.ref('users/' + this.ub_user.id + '/tags')
+                    var tagListRef = fb.db.ref('users/' + this.ub_user.id + '/tags')
                     var tagRef;
                     if(tag.id){
-                        tagRef = db.db.ref('users/' + this.ub_user.id + '/tags/' + tag.id);
+                        tagRef = fb.db.ref('users/' + this.ub_user.id + '/tags/' + tag.id);
                         await tagRef.set({name: tag.name});
                     }
                     else{
@@ -366,7 +380,7 @@ export default {
                     this.setTags(this.tagsEditing);
                 })
                 this.tagsRemoved.forEach(async (id) => {
-                    await db.db.ref('users/' + this.ub_user.id + '/tags/' + id).set(null);
+                    await fb.db.ref('users/' + this.ub_user.id + '/tags/' + id).set(null);
                 })
 
                 this.editTag = false;
@@ -381,7 +395,7 @@ export default {
             this.fetching = true;
             this.postData = [];
             this.currentTimestamp = new Date().getTime();
-            const postListRef = this.$route.query.postId && sessionStorage.getItem('lastTimestamp')? db.db.ref('posts').orderByChild('timestamp').endAt(Number(sessionStorage.getItem('lastTimestamp'))) : db.db.ref('posts').orderByChild('timestamp').limitToFirst(10);
+            const postListRef = this.$route.query.postId && sessionStorage.getItem('lastTimestamp')? fb.db.ref('posts').orderByChild('timestamp').endAt(Number(sessionStorage.getItem('lastTimestamp'))) : fb.db.ref('posts').orderByChild('timestamp').limitToFirst(10);
             var timestamp;
             var timeoffset;
             var pushCount = 0;
@@ -426,7 +440,7 @@ export default {
                 this.myNextIndex = i;
             }
             else if(!this.myList){
-                const postListRef = db.db.ref('posts').limitToFirst(Number(offset));
+                const postListRef = fb.db.ref('posts').limitToFirst(Number(offset));
                 var timestamp;
                 var timeoffset;
                 var pushCount = 0;
@@ -469,7 +483,7 @@ export default {
             this.postData = [];
             this.MyData = [];
             this.currentTimestamp = new Date().getTime();
-            const postListRef = db.db.ref('posts');
+            const postListRef = fb.db.ref('posts');
             var timestamp;
             var timeoffset;
             try{
@@ -562,7 +576,7 @@ export default {
         saveNewUserName(userName) {
             try {
                 this.setUserName(userName);
-                db.db.ref('users/' + this.ub_user.id + '/name').set(userName);
+                fb.db.ref('users/' + this.ub_user.id + '/name').set(userName);
             }
             catch (e) {
                 console.log(e);
@@ -572,7 +586,7 @@ export default {
         saveNewEmail(email) {
             try {
                 this.setEmail(email);
-                db.db.ref('users/' + this.ub_user.id + '/email').set(email);
+                fb.db.ref('users/' + this.ub_user.id + '/email').set(email);
             }
             catch (e) {
                 console.log(e);
@@ -598,13 +612,13 @@ export default {
 
         async querying() {
             var updates = {};
-            const postListRef = db.db.ref('postsWithContents');
+            const postListRef = fb.db.ref('postsWithContents');
             await postListRef.get().then((snapshots) => {
                 snapshots.forEach((snapshot) => {
                     updates['/postsWithContents/' + snapshot.key + '/password'] = 1234;
                 })
             })
-            await db.db.ref().update(updates);
+            await fb.db.ref().update(updates);
             console.log('updated!');
         }
     }

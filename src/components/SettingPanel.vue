@@ -52,7 +52,7 @@
 </template>
 
 <script>
-import db from '@/db';
+import fb from '@/firebase';
 import oss from '@/oss/ossList.json';
 import emailjs from '@emailjs/browser';
 
@@ -198,18 +198,18 @@ export default {
             if(confirm(this.$t('confirm-remove'))){
                 var updates = {};
                 try{
-                    await db.db.ref('posts').orderByChild('userId').startAt(this.userInfo.user.id).endAt(this.userInfo.user.id).once("value", (snapshot) => {
+                    await fb.db.ref('posts').orderByChild('userId').startAt(this.userInfo.user.id).endAt(this.userInfo.user.id).once("value", (snapshot) => {
                         snapshot.forEach((data) => {
                             updates['/posts/' + data.key] = null;
                         })
                     })
-                    await db.db.ref('postsWithContents').orderByChild('userId').startAt(this.userInfo.user.id).endAt(this.userInfo.user.id).once("value", (snapshot) => {
+                    await fb.db.ref('postsWithContents').orderByChild('userId').startAt(this.userInfo.user.id).endAt(this.userInfo.user.id).once("value", (snapshot) => {
                         snapshot.forEach((data) => {
                             updates['/postsWithContents/' + data.key] = null;
                         })
                     })
-                    db.db.ref().update(updates);
-                    db.db.ref('users/' + this.userInfo.user.id).remove()
+                    fb.db.ref().update(updates);
+                    fb.db.ref('users/' + this.userInfo.user.id).remove()
                     this.$emit('logOut');
                 } catch (e) {
                     console.log(e);

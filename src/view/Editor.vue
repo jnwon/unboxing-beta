@@ -54,7 +54,7 @@
 
 <script>
 import router from "@/router";
-import db from '@/db';
+import fb from '@/firebase';
 import { mapState, mapMutations } from "vuex";
 
 export default {
@@ -109,7 +109,7 @@ export default {
         //     window.$('.fa-save + .tooltip > .tooltip-inner').css('display', 'none');
         // })
 
-        await db.db.ref('posts').orderByChild('userId').startAt(this.ub_user.id).endAt(this.ub_user.id).once("value", (snapshot) => {
+        await fb.db.ref('posts').orderByChild('userId').startAt(this.ub_user.id).endAt(this.ub_user.id).once("value", (snapshot) => {
             snapshot.forEach((data) => {
                 if(data.val().temp && !data.val().parent){
                     this.tempPosts.push({postId: data.key, title: data.val().title, datetime: new Date(-data.val().timestamp).toLocaleString()});
@@ -183,7 +183,7 @@ export default {
             callbacks: {
                 onImageUpload: async function(files) {
                     for(var i=0; i < files.length; i++){
-                        var ref = db.storage.ref().child(new Date().getTime()+'_'+files[i].name);
+                        var ref = fb.storage.ref().child(new Date().getTime()+'_'+files[i].name);
                         window.$('#summernote').summernote('disable');
                         await ref.put(files[i]).then(() => {
                             ref.getDownloadURL().then(async (url) => {
@@ -239,8 +239,8 @@ export default {
         },
         removeTempPost(postId) {
             var updates = {};
-            db.db.ref('posts/'+postId+'/children').get().then(async (snapshot) => {
-                if(snapshot.exists){
+            fb.db.ref('posts/'+postId+'/children').get().then(async (snapshot) => {
+                if(snapshot.exists()){
                     snapshot.forEach((data) => {
                         updates['/postsWithContents/' + data.key] = null;
                         updates['/posts/' + data.key] = null;
@@ -249,7 +249,7 @@ export default {
                 updates['/postsWithContents/' + postId] = null;
                 updates['/posts/' + postId] = null;
                 try {
-                    await db.db.ref().update(updates);
+                    await fb.db.ref().update(updates);
                 } catch (e) {
                     console.log(e);
                     alert(e);
@@ -277,7 +277,7 @@ export default {
             var title;
             var contents;
             var fingerPrint;
-            const postRef = db.db.ref('postsWithContents/'+postId);
+            const postRef = fb.db.ref('postsWithContents/'+postId);
             try{
                 window.$("#tempPosts").modal('hide');
                 await postRef.get().then((snapshot) => {
@@ -331,7 +331,7 @@ export default {
             var boxFingerPrint = this.ub_fingerPrint;
             var updates = {};
             
-            var postListRef = db.db.ref('posts');
+            var postListRef = fb.db.ref('posts');
             var newPostRef = postListRef.push();
             var postKey = loadedTempPostId;
             if(!loadedTempPostId) {
@@ -439,7 +439,7 @@ export default {
                 };
                 this.submitting = true;
                 window.$('#summernote').summernote('disable');
-                await db.db.ref().update(updates);
+                await fb.db.ref().update(updates);
                 if(isSavedForTemp){
                     this.loadedTempPostId = postKey;
                     window.$('.fa-save').tooltip('show');

@@ -74,6 +74,29 @@
                 comment: comment.text,
                 read: false
               });
+
+              db.ref('users/' + searchParam('ownerId') + '/fcmToken').get().then((snapshot) => {
+                if(snapshot.exists()){
+                  const fcmTo = snapshot.val();
+                  fetch('https://fcm.googleapis.com/fcm/send', {
+                    method: 'POST',
+                    headers: {
+                      Authorization: 'key=AAAA8zH9FHE:APA91bHTTjDc8XmXVQDhRRha8NnmUVu6ZLI1hVvrFKhAkTIc2BPR5HGtl9AemRX3uXEAPGUOngDcwvtroei0kJd1ETQYQNCnIKyXY5BmNRwqZiwRYd2ks36aGEiClwNwpPjhcjzl1rRz',
+                      "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                      to: fcmTo,
+                      notification: {
+                        title: "새로운 댓글이 달렸습니다: [" + document.title + "]",
+                        body: comment.text,
+                        icon: './img/icons/apple-touch-icon.png',
+                        click_action: location.href + '#disqus_thread'
+                      }
+                    })
+                  })
+                }
+              })
+              
             } catch(e) {
               console.log(e);
               alert(e);

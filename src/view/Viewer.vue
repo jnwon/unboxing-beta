@@ -56,7 +56,7 @@
 
 <script>
 import router from '@/router';
-import db from '@/db';
+import fb from '@/firebase';
 import { mapState, mapMutations } from 'vuex';
 import Clipboard from 'clipboard'
 
@@ -125,7 +125,7 @@ export default {
             (d.head || d.body).appendChild(s);
         })();
 
-        const postRef = db.db.ref('postsWithContents/'+this.$route.query.postId);
+        const postRef = fb.db.ref('postsWithContents/'+this.$route.query.postId);
         try{
             await postRef.get().then((snapshot) => {
                 this.lock = snapshot.val().lock;
@@ -177,7 +177,7 @@ export default {
                     })
                 }
                 
-                db.db.ref('posts/' + this.parent + '/title').get().then((snapshot) => {
+                fb.db.ref('posts/' + this.parent + '/title').get().then((snapshot) => {
                     this.parentTitle = snapshot.val();
                 })
 
@@ -283,7 +283,7 @@ export default {
                     }
                 }
                 if(this.parent){
-                    await db.db.ref('postsWithContents/' + this.parent + '/contents').get().then((snapshot) => {
+                    await fb.db.ref('postsWithContents/' + this.parent + '/contents').get().then((snapshot) => {
                         this.parentContents = snapshot.val();
                     })
                     window.$('.parent-contents').find('#'+this.$route.query.postId).remove();
@@ -294,7 +294,7 @@ export default {
                 updates['/postsWithContents/' + this.$route.query.postId] = null;
                 updates['/posts/' + this.$route.query.postId] = null;
                 try{
-                    await db.db.ref().update(updates);
+                    await fb.db.ref().update(updates);
                     window.$("#deleteConfirm").modal('hide');
                     this.moveToList();
                 } catch (e) {
@@ -318,7 +318,7 @@ export default {
             updates['/postsWithContents/' + this.$route.query.postId + '/announcement'] = this.announcement;
             updates['/posts/' + this.$route.query.postId + '/announcement'] = this.announcement;
             try{
-                await db.db.ref().update(updates);
+                await fb.db.ref().update(updates);
             } catch (e) {
                 console.log(e);
                 alert(e);

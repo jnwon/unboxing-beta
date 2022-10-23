@@ -53,7 +53,7 @@
   <script>
   import { mapState, mapMutations } from 'vuex';
   import crypto from 'crypto-js';
-  import db from '@/db';
+  import fb from '@/firebase';
   
   export default {
     name: 'HelloUnboxing',
@@ -80,12 +80,12 @@
           var userId = this.ub_user.id;
           var tutorial = this.ub_user.tutorial;
           var noAnnouncement = this.ub_user.noAnnouncement;
-          await db.db.ref('users/' + userId).get().then((snapshot) => {
+          await fb.db.ref('users/' + userId).get().then((snapshot) => {
             console.log(snapshot.val().name);
             this.setUserInfo({id: userId, name: snapshot.val().name, email: snapshot.val().email, lastTimestampOfNoti: snapshot.val().lastTimestampOfNoti, tutorial: tutorial, noAnnouncement: noAnnouncement})
           })
           var tags = [];
-          await db.db.ref('users/' + userId + '/tags').get().then((snapshot) => {
+          await fb.db.ref('users/' + userId + '/tags').get().then((snapshot) => {
             snapshot.forEach((data) => {
               tags.push({id: data.key, name: data.val().name});
             })
@@ -111,7 +111,7 @@
         }
         else{
           const fingerPrint = crypto.HmacMD5(this.nameInput + new Date().getTime(), 'test').toString();        
-          var userListRef = db.db.ref('users');
+          var userListRef = fb.db.ref('users');
           var newUserRef = userListRef.push();
           var newUserKey = newUserRef.key;
   
@@ -121,7 +121,7 @@
               tags: null,
               fingerPrint: fingerPrint
             });
-            var tagListRef = db.db.ref('users/' + newUserKey + '/tags');
+            var tagListRef = fb.db.ref('users/' + newUserKey + '/tags');
             var newTagRef1 = tagListRef.push();
             var newTagRef2 = tagListRef.push();
             var newTagKey1 = newTagRef1.key;
@@ -129,7 +129,7 @@
             var updates = {};
             updates['users/' + newUserKey + '/tags/' + newTagKey1] = {name: this.$t('default-tag-1')};
             updates['users/' + newUserKey + '/tags/' + newTagKey2] = {name: this.$t('default-tag-2')};
-            await db.db.ref().update(updates);
+            await fb.db.ref().update(updates);
   
             this.setFingerPrint(fingerPrint);
             this.setUserInfo({
@@ -166,7 +166,7 @@
           window.$('#keyInputText').animate({left: 0}, 'fast', function() {window.$('#keyInputText').blur();})
         }
         else{
-          var userListRef = db.db.ref('users');
+          var userListRef = fb.db.ref('users');
           try{
             await userListRef.orderByChild('fingerPrint').startAt(this.keyInput).endAt(this.keyInput).once("value", (snapshot) => {
               if(snapshot.val()){

@@ -36,7 +36,7 @@
 </template>
 
 <script>
-import db from '@/db';
+import fb from '@/firebase';
 import { mapMutations } from 'vuex';
 
 export default {
@@ -85,7 +85,7 @@ export default {
         },
         async openNotiPost(index, commentId, postId) {
             this.setNotiRead(index);
-            await db.db.ref('notifications/' + this.user.id + '/' + commentId + '/read').set(true);
+            await fb.db.ref('notifications/' + this.user.id + '/' + commentId + '/read').set(true);
             location.href = '/viewer?postId=' + postId + '&ownerId=' + this.user.id + '#disqus_thread'
         },
         async removeNoti(commentId) {
@@ -93,7 +93,7 @@ export default {
                 return data.commentId != commentId;
             });
             await this.setNoti(filtered);
-            await db.db.ref('notifications/' + this.user.id + '/' + commentId).set(null);
+            await fb.db.ref('notifications/' + this.user.id + '/' + commentId).set(null);
             this.notiRendering();
         },
         getLocaleTimeString(timeoffset) {

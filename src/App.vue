@@ -5,7 +5,7 @@
 </template>
 
 <script>
-import db from '@/db';
+import fb from '@/firebase';
 import NotiPanel from '@/components/NotiPanel.vue';
 import { mapState, mapMutations } from 'vuex';
 
@@ -34,7 +34,7 @@ export default {
           this.unread++;
         }
       })
-      this.ref = db.db.ref('/notifications/' + this.ub_user.id);
+      this.ref = fb.db.ref('/notifications/' + this.ub_user.id);
       this.interval = setInterval(this.fetchNotis, 1000);
     }
   },
@@ -74,7 +74,7 @@ export default {
               window.$('#notiShortCut').animate({opacity: 1}, 'fast');
             }
             this.setLastTimestampOfNoti(this.lastTimestampOfNoti);
-            db.db.ref('users/' + this.ub_user.id + '/lastTimestampOfNoti').set(this.lastTimestampOfNoti);
+            fb.db.ref('users/' + this.ub_user.id + '/lastTimestampOfNoti').set(this.lastTimestampOfNoti);
             this.notifications = notis.concat(this.notifications);
             await this.setNoti(this.notifications);
             this.$refs.notiPanel.notiRendering();
