@@ -39,6 +39,9 @@ export default createStore({
         setFingerPrint(state, fingerPrint) {
             state.ub_fingerPrint = fingerPrint;
         },
+        setCheckEmergency(state, check) {
+            state.ub_user.checkEmergency = check;
+        }
     },
     plugins: [
         createPersistedState()

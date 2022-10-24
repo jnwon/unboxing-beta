@@ -80,9 +80,10 @@
           var userId = this.ub_user.id;
           var tutorial = this.ub_user.tutorial;
           var noAnnouncement = this.ub_user.noAnnouncement;
+          var checkEmergency = this.ub_user.checkEmergency;
           await fb.db.ref('users/' + userId).get().then((snapshot) => {
             console.log(snapshot.val().name);
-            this.setUserInfo({id: userId, name: snapshot.val().name, email: snapshot.val().email, lastTimestampOfNoti: snapshot.val().lastTimestampOfNoti, tutorial: tutorial, noAnnouncement: noAnnouncement})
+            this.setUserInfo({id: userId, name: snapshot.val().name, email: snapshot.val().email, lastTimestampOfNoti: snapshot.val().lastTimestampOfNoti, tutorial: tutorial, noAnnouncement: noAnnouncement, checkEmergency: checkEmergency})
           })
           var tags = [];
           await fb.db.ref('users/' + userId + '/tags').get().then((snapshot) => {
