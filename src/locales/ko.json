@@ -1,5 +1,5 @@
 {
-    "info-version" : "0.161",
+    "info-version" : "0.17",
     "info-version-label" : "Unboxing 버전 : ",
     "info-contact" : "개발자 연락처 : ",
     "info-oss" : "오픈소스 라이선스",
@@ -11,6 +11,9 @@
     "setting-remove" : "계정 삭제",
     "setting-accouncement-no" : "공지 보이기",
     "setting-accouncement-yes" : "공지 숨기기",
+    "setting-privacypolicy-header" : "아래의 개인정보 수집정책을 읽고 동의 버튼을 눌러주세요.",
+    "setting-privacypolicy-close" : "닫기",
+    "setting-privacypolicy-agree" : "동의",
     "noti-noitem" : "새로운 알림이 없습니다.",
     
     "default-tag-1" : "일상",

@@ -49,12 +49,32 @@
     
         </div>
     </div>
+
+    <div id="privacyPolicy" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3> {{ $t('setting-privacypolicy-header') }} </h3>
+                </div>
+                <div class="modal-body" style="text-align: left; height: 450px; overflow-x: hidden">
+                    <div v-html="privacyPolicy"></div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-default" data-dismiss="modal"> {{ $t('setting-privacypolicy-close') }} </button>
+                    <button class="btn btn-info" data-dismiss="modal" @click="ppAgree()"> {{ $t('setting-privacypolicy-agree') }} </button>
+                </div>
+            </div>
+    
+        </div>
+    </div>
 </template>
 
 <script>
 import fb from '@/firebase';
 import oss from '@/oss/ossList.json';
 import emailjs from '@emailjs/browser';
+import pp from '@/assets/PrivacyPolicy.js'
 
 export default {
     name: 'Setting-Panel',
@@ -71,6 +91,8 @@ export default {
             authingEmail: false,
             authNumber: null,
             ranNum: null,
+            privacyPolicyAgree: false,
+            privacyPolicy: '',
             newUserName: '',
             newEmail: '',
             ossList: []
@@ -89,7 +111,12 @@ export default {
         if(this.userInfo.user){
             this.newUserName = this.userInfo.user.name;
             this.newEmail =  this.userInfo.user.email;
+            if(this.userInfo.user.privacyPolicyAgree == true){
+                this.privacyPolicyAgree = true;
+            }
         }
+
+        this.privacyPolicy = pp;
     },
     methods: {
         closeSetting() {
@@ -115,8 +142,17 @@ export default {
             this.newUserName = this.userInfo.user.name;
             this.editingUsername = false;
         },
+        ppAgree() {
+            this.privacyPolicyAgree = true;
+            this.$emit('savePPAgree', true);
+            this.authEmail();
+        },
         authEmail() {
             if(this.newEmail){
+                if(!this.privacyPolicyAgree){
+                    window.$('#privacyPolicy').modal('show');
+                    return 0;
+                }
                 this.ranNum = Math.floor(Math.random()*(9999-1111+1)) + 1111;
                 // var templateId = navigator.language == 'ko'? 'template_1b8u4wi' : 'template_uis7qxi';
                 var templateId = 'template_1b8u4wi';

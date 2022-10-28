@@ -15,7 +15,7 @@
                     <br/>
                     <div style="text-align: left">
                         <span v-for="(tag, index) in this.postTags" :key="index" style="margin-right: 15px; font-size: large; color: orange"><b>#{{tag.name}}</b></span>
-                        <span><i class="fas fa-share-alt" v-mpopover:top="$t('tooltip-share-link')" v-bspopover:top="'<img id=\'kakaoshare\' src=\'./img/icons/kakaotalk.png\'/><i class=\'fa fa-link share\'>'"></i></span>
+                        <span><i class="fas fa-share-alt" v-mpopover:top="$t('tooltip-share-link')" v-bspopover:top="'<i class=\'fab fa-twitter share\'></i><i class=\'fab fa-facebook share\'></i><img id=\'kakaoshare\' src=\'./img/icons/kakaotalk.png\'/><i class=\'fa fa-link share\'>'"></i></span>
                         <a href="#" style="position:absolute; right: 5%"><i class="fa fa-angle-up"/></a>
                     </div>
                 </div>
@@ -217,6 +217,19 @@ export default {
                             },
                         },
                     });
+                })
+
+                window.$(document).on('click', ".fa-twitter", () => {
+                    window.$('.fa-share-alt').popover('hide');
+                    var sendText = window.$('#post-title').text();
+                    var sendUrl = location.href
+                    window.open("https://twitter.com/intent/tweet?text=" + sendText + "&url=" + sendUrl);
+                })
+
+                window.$(document).on('click', ".fa-facebook", () => {
+                    window.$('.fa-share-alt').popover('hide');
+                    var sendUrl = location.href
+                    window.open("http://www.facebook.com/sharer/sharer.php?u=" + sendUrl);
                 })
 
                 window.$(document).on('click', ".fa-link", () => {

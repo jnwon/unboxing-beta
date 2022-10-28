@@ -1,5 +1,5 @@
 {
-    "info-version" : "0.161",
+    "info-version" : "0.17",
     "info-version-label" : "Unboxing Version : ",
     "info-contact" : "To Developer : ",
     "info-oss" : "Open Source Licenses",
@@ -11,6 +11,9 @@
     "setting-remove" : "Remove Account",
     "setting-accouncement-no" : "Show Accouncement",
     "setting-accouncement-yes" : "Hide Accouncement",
+    "setting-privacypolicy-header" : "Please read carefully following policy of collecting privacy, and click 'Agree'.",
+    "setting-privacypolicy-close" : "Close",
+    "setting-privacypolicy-agree" : "Agree",
     "noti-noitem" : "There is no new notification.",
 
     "default-tag-1" : "dailylife",

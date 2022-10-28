@@ -81,9 +81,10 @@
           var tutorial = this.ub_user.tutorial;
           var noAnnouncement = this.ub_user.noAnnouncement;
           var checkEmergency = this.ub_user.checkEmergency;
+          var privacyPolicyAgree = this.ub_user.privacyPolicyAgree;
           await fb.db.ref('users/' + userId).get().then((snapshot) => {
             console.log(snapshot.val().name);
-            this.setUserInfo({id: userId, name: snapshot.val().name, email: snapshot.val().email, lastTimestampOfNoti: snapshot.val().lastTimestampOfNoti, tutorial: tutorial, noAnnouncement: noAnnouncement, checkEmergency: checkEmergency})
+            this.setUserInfo({id: userId, name: snapshot.val().name, email: snapshot.val().email, lastTimestampOfNoti: snapshot.val().lastTimestampOfNoti, tutorial: tutorial, noAnnouncement: noAnnouncement, checkEmergency: checkEmergency, privacyPolicyAgree: privacyPolicyAgree})
           })
           var tags = [];
           await fb.db.ref('users/' + userId + '/tags').get().then((snapshot) => {
@@ -179,6 +180,7 @@
                   id: userId,
                   name: userInfoObj.name,
                   email: userInfoObj.email,
+                  privacyPolicyAgree: userInfoObj.privacyPolicyAgree,
                   lastTimestampOfNoti : 0,
                   tutorial: 0
                 });

@@ -6,7 +6,7 @@
         <h3 v-if="fetching"><i class="fa fa-spinner fa-spin"/></h3>
 
         <setting-panel :userInfo="{user: ub_user, fingerPrint: ub_fingerPrint}"
-                        @saveNewUserName="saveNewUserName" @saveNewEmail="saveNewEmail" @logOut="logOut" @setAnnouncement="setAnnouncement"/>
+                        @saveNewUserName="saveNewUserName" @saveNewEmail="saveNewEmail" @savePPAgree="savePPAgree" @logOut="logOut" @setAnnouncement="setAnnouncement" />
         <!-- <noti-panel :userInfo="{user: ub_user, fingerPrint: ub_fingerPrint}"></noti-panel> -->
 
         <div id="main" class="row">
@@ -39,7 +39,7 @@
                         <span v-if="this.ub_user && !$route.params.userId" style="margin-right: 20px" @click="toggleListMode()" id="myBtn" v-popover:top="$t('tooltip-tutorial-4-1')"><b>{{myList? 'ALL' : 'MY'}}</b></span>
                         <span v-if="$route.params.userId" style="margin-right: 20px" @click="goGome()"><i class="fa fa-home"></i></span>
                         <!-- <span style="margin-right: 20px" @click="toggleListType()"><i :class="listView? 'fa fa-list' : 'fa fa-newspaper'"/></span> -->
-                        <span v-if="$route.params.userId"><i class="fas fa-share-alt" v-mpopover:top="$t('tooltip-unboxing-link')" v-bspopover:top="'<img id=\'kakaoshare\' src=\'./img/icons/kakaotalk.png\'/><i class=\'fa fa-link share\'>'"></i></span>
+                        <span v-if="$route.params.userId"><i class="fas fa-share-alt" v-mpopover:top="$t('tooltip-unboxing-link')" v-bspopover:top="'<i class=\'fab fa-twitter share\'></i><i class=\'fab fa-facebook share\'></i><img id=\'kakaoshare\' src=\'./img/icons/kakaotalk.png\'/><i class=\'fa fa-link share\'>'"></i></span>
                         <span v-show="myList && !$route.params.userId" @click="openSetting()"><i class="fas fa-cog"/></span>
                         <span style="position:absolute; right: 48%"><i @click="fetchNext(10)" class="fas fa-plus-circle"/></span>
                         <span style="position:absolute; right: 5%" id="fa-pen" v-popover:top="$t('tooltip-tutorial-1')"><i @click="moveToEditor()" class="fa fa-pen"/></span>
@@ -289,6 +289,19 @@ export default {
             });
         })
 
+        window.$(document).on('click', ".fa-twitter", () => {
+            window.$('.fa-share-alt').popover('hide');
+            var sendText = this.ownerName + '의 Unboxing';
+            var sendUrl = location.href
+            window.open("https://twitter.com/intent/tweet?text=" + sendText + "&url=" + sendUrl);
+        })
+
+        window.$(document).on('click', ".fa-facebook", () => {
+            window.$('.fa-share-alt').popover('hide');
+            var sendUrl = location.href
+            window.open("http://www.facebook.com/sharer/sharer.php?u=" + sendUrl);
+        })
+
         window.$(document).on('click', ".fa-link", () => {
             window.$('.fa-share-alt').popover('hide');
             window.$(".fa-share-alt").tooltip('show');
@@ -319,7 +332,7 @@ export default {
         ...mapState(['ub_user', 'ub_tags', 'ub_fingerPrint'])
     },
     methods: {
-        ...mapMutations(['setUserInfo', 'setTags', 'setFingerPrint', 'setTutorialStep', 'setUserName', 'setEmail', 'setNoAnnouncement', 'setCheckEmergency']),
+        ...mapMutations(['setUserInfo', 'setTags', 'setFingerPrint', 'setTutorialStep', 'setUserName', 'setEmail', 'setNoAnnouncement', 'setCheckEmergency', 'setPrivacyPolicyAgree']),
         reload() {
             location.reload();
         },
@@ -624,6 +637,16 @@ export default {
             try {
                 this.setEmail(email);
                 fb.db.ref('users/' + this.ub_user.id + '/email').set(email);
+            }
+            catch (e) {
+                console.log(e);
+                alert(e);
+            }
+        },
+        savePPAgree(agree) {
+            try {
+                this.setPrivacyPolicyAgree(agree);
+                fb.db.ref('users/' + this.ub_user.id + '/privacyPolicyAgree').set(agree);
             }
             catch (e) {
                 console.log(e);

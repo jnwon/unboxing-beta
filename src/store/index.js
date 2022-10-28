@@ -41,6 +41,9 @@ export default createStore({
         },
         setCheckEmergency(state, check) {
             state.ub_user.checkEmergency = check;
+        },
+        setPrivacyPolicyAgree(state, agree) {
+            state.ub_user.privacyPolicyAgree = agree;
         }
     },
     plugins: [
