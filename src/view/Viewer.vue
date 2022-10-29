@@ -25,7 +25,8 @@
                     <i v-if="postFingerPrint == this.ub_fingerPrint" class="fa fa-edit" @click="editPost()"/>
                     <i v-if="postFingerPrint == this.ub_fingerPrint" class="fa fa-trash" @click="deleteOk()" style="margin-left: 20%;"/>
                     <i v-else class="far fa-star" v-tooltip="$t('tooltip-developing')" style="margin-left: 20%;"/>
-                    <i v-if="isManager" class="fas fa-bullhorn" :style="'float: right; ' + (announcement? 'color: green' : '')" @click="toggleAnnuncement()"/>
+                    <i v-if="isManager" class="fas fa-flag" :style="'float: right;' + (popup? 'color: green' : '')" @click="toggleAnnouncementPopup()"/>
+                    <i v-if="isManager" class="fas fa-bullhorn" :style="'float: right; margin-right: 15px; ' + (announcement? 'color: green' : '')" @click="toggleAnnuncement()"/>
                 </div>
                 <br/>
                 <div id="disqus_thread"></div>
@@ -66,6 +67,8 @@ export default {
         return {
             isManager: false,
             announcement: false,
+            popup : false,
+            popupCurrent : '',
             lock: false,
             postTitle: '',
             postContents: '',
@@ -98,6 +101,13 @@ export default {
         var userIdDisplay;
         var userIdFull;
         var tags;
+
+        if(this.isManager){
+            fb.db.ref('announcementPopup').get().then((snapshot) => {
+                this.popupCurrent = snapshot.val();
+                this.popup = this.$route.query.postId == this.popupCurrent? true : false;
+            })
+        }
 
         if(window.Kakao.isInitialized()){
             window.Kakao.cleanup();
@@ -336,6 +346,16 @@ export default {
                 console.log(e);
                 alert(e);
             }
+        },
+        async toggleAnnouncementPopup() {
+            this.popup = !this.popup;
+            if(this.popup && this.$route.query.postId != this.popupCurrent) {
+                this.popupCurrent = this.$route.query.postId
+            }
+            else if(!this.popup && this.$route.query.postId == this.popupCurrent) {
+                this.popupCurrent = null;
+            }
+            fb.db.ref('announcementPopup').set(this.popupCurrent);
         }
 
     }

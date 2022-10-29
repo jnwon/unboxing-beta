@@ -7,6 +7,7 @@ export default createStore({
         ub_noti: [],
         ub_tags: null,
         ub_fingerPrint: '',
+        ub_lastCheckedPopup: '' 
     },
     mutations: {
         setUserInfo(state, user) {
@@ -44,6 +45,9 @@ export default createStore({
         },
         setPrivacyPolicyAgree(state, agree) {
             state.ub_user.privacyPolicyAgree = agree;
+        },
+        setCheckPopup(state, postId) {
+            state.ub_lastCheckedPopup = postId;
         }
     },
     plugins: [

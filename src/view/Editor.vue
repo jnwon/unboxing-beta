@@ -18,7 +18,8 @@
                 <i v-if="!isEditmode" class="fas fa-folder-open" @click="loadTempPosts()" v-popover:top="$t('tooltip-load-temp-fail')"/>
                 <i v-if="!isEditmode" class="fas fa-save" @click="submitPost(this.loadedTempPostId, true)" v-popover:top="$t('tooltip-save-temp')"/>
                 <i :class="submitting ? 'fa fa-spinner fa-spin' : 'fa fa-upload'" @click="submitPost(this.loadedTempPostId, false)" style="margin-left: 20%;" v-popover:top="$t('tooltip-tutorial-2-2')"/>
-                <i v-if="isManager" class="fas fa-bullhorn" :style="'float: right; ' + (announcement? 'color: green' : '')" @click="toggleAnnuncement()"/>
+                <i v-if="isManager" class="fas fa-flag" :style="'float: right;' + (popup? 'color: green' : '')" @click="toggleAnnouncementPopup()"/>
+                <i v-if="isManager" class="fas fa-bullhorn" :style="'float: right; margin-right: 15px; ' + (announcement? 'color: green' : '')" @click="toggleAnnouncement()"/>
                 <i v-else :class="lock? 'fa fa-lock' : 'fa fa-unlock'" :style="'float: right; ' + (lock? 'color: green' : '')" @click="toggleLock()"/>
             </div>
         </div>
@@ -65,6 +66,8 @@ export default {
             isEmpty : true,
             isManager : false,
             announcement : false,
+            popup : false,
+            popupCurrent : '',
             tempPosts : [],
             loadedTempPostId : null,
             submitting : false,
@@ -108,6 +111,12 @@ export default {
         // window.$('.fa-save').on('hide.bs.tooltip', function() {
         //     window.$('.fa-save + .tooltip > .tooltip-inner').css('display', 'none');
         // })
+
+        if(this.isManager){
+            fb.db.ref('announcementPopup').get().then((snapshot) => {
+                this.popupCurrent = snapshot.val();
+            })
+        }
 
         await fb.db.ref('posts').orderByChild('userId').startAt(this.ub_user.id).endAt(this.ub_user.id).once("value", (snapshot) => {
             snapshot.forEach((data) => {
@@ -234,8 +243,11 @@ export default {
         toggleLock() {
             this.lock = !this.lock;
         },
-        toggleAnnuncement() {
+        toggleAnnouncement() {
             this.announcement = !this.announcement;
+        },
+        toggleAnnouncementPopup() {
+            this.popup = !this.popup;
         },
         removeTempPost(postId) {
             var updates = {};
@@ -292,6 +304,9 @@ export default {
                     }
                     if(snapshot.val().children){
                         this.postChildren = snapshot.val().children;
+                    }
+                    if(this.isManager){
+                        this.popup = postId == this.popupCurrent? true : false;
                     }
                 })
                 if(fingerPrint != this.ub_fingerPrint){
@@ -462,6 +477,14 @@ export default {
                     if(!this.isEditmode){
                         sessionStorage.removeItem('lastTimestamp');
                         sessionStorage.removeItem('myNextIndex');
+                    }
+                    if(this.isManager){
+                        if(this.popup && postKey != this.popupCurrent) {
+                            await fb.db.ref('announcementPopup').set(postKey);
+                        }
+                        else if(!this.popup && postKey == this.popupCurrent) {
+                            await fb.db.ref('announcementPopup').set(null);
+                        }
                     }
                     router.push({name: 'Viewer', query: {postId: postKey}})
                 }

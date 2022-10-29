@@ -67,21 +67,12 @@
             <!-- Modal content-->
             <div class="modal-content">
                 <div class="modal-header">
-                    <h4 class="modal-title">포스트 작성/수정시 발생하는 오류 대처방법</h4>
+                    <h4 class="modal-title"> {{ announcementPopup.title }} </h4>
                 </div>
-                <div class="modal-body" style="text-align: left;">
-                    <p>
-                        현재 포스트 작성 또는 수정시, 에디터 페이지의 등록 버튼을 누를 경우 에러메세지("TypeError: o.insert is not a function")와 함께 다음 단계로 진행이 되지 않는 오류가 발생하고 있습니다.<br/>
-                        해당 오류를 임시적으로 해결하기 위해서, 우선 포스트 작성 페이지로 진입하였을 경우 곧바로 게시물을 작성하지 마시고 
-                        <b>먼저 페이지 새로고침(앱의 경우 스크롤이 가장 위에 위치한 상태에서 화면을 아래 방향으로 스와이프)을 1회 실시한 후 게시물을 작성하시고, 이후 포스트 등록 버튼을 누르시면 정상적으로 게시물이 등록됩니다.</b><br/>
-                        현재 오류의 원인을 지속적으로 파악하고있습니다. 문제가 해결되는대로 업데이트 후 재공지하겠습니다.<br/>
-                        이용에 불편을 드려 대단히 죄송합니다.<br/>
-                        <br/>
-                        - 언박싱팀
-                    </p>
+                <div class="modal-body" v-html="announcementPopup.contents">
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal" @click="checkEmergency()">확인</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal" @click="checkPopup()"> {{ $t('setting-privacypolicy-close') }} </button>
                 </div>
             </div>
     
@@ -120,6 +111,7 @@ export default {
             tagsEditing : [],
             tagsRemoved : [],
             filters: [],
+            announcementPopup: {}
         }
     },
     watch: {
@@ -167,14 +159,22 @@ export default {
     },
     async mounted() {
 
-        document.title = "unboxing-beta";
+        document.title = "Unboxing 언박싱";
 
-        if(this.ub_user){
-            this.checkEmergency();
-        }
-        // if(this.ub_user && !this.ub_user.checkEmergency){
-        //     window.$('#notiEmergency').modal('show');
-        // }
+        fb.db.ref('announcementPopup').get().then((snapshot) => {
+            if(snapshot.exists()){
+                fb.db.ref('postsWithContents/' + snapshot.val()).get().then((data) => {
+                    this.announcementPopup.postId = snapshot.val();
+                    this.announcementPopup.title = data.val().title;
+                    this.announcementPopup.contents = data.val().contents;
+                    
+                    if(this.ub_lastCheckedPopup != this.announcementPopup.postId){
+                        window.$('#notiEmergency').modal('show');
+                    }
+                })
+            }
+        })
+
 
         if(this.$route.params.userId){
             try{
@@ -329,15 +329,15 @@ export default {
         }
     },
     computed: {
-        ...mapState(['ub_user', 'ub_tags', 'ub_fingerPrint'])
+        ...mapState(['ub_user', 'ub_tags', 'ub_fingerPrint', 'ub_lastCheckedPopup'])
     },
     methods: {
-        ...mapMutations(['setUserInfo', 'setTags', 'setFingerPrint', 'setTutorialStep', 'setUserName', 'setEmail', 'setNoAnnouncement', 'setCheckEmergency', 'setPrivacyPolicyAgree']),
+        ...mapMutations(['setUserInfo', 'setTags', 'setFingerPrint', 'setTutorialStep', 'setUserName', 'setEmail', 'setNoAnnouncement', 'setCheckPopup', 'setPrivacyPolicyAgree']),
         reload() {
             location.reload();
         },
-        checkEmergency() {
-            this.setCheckEmergency(true);
+        checkPopup() {
+            this.setCheckPopup(this.announcementPopup.postId);
         },
         moveToViewer(postId, ownerId) {
             if(this.ub_user && this.ub_user.tutorial == 4){
