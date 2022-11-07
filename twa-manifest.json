@@ -14,25 +14,21 @@
   "startUrl": "/",
   "iconUrl": "https://unboxing-200c8.web.app/img/icons/android-chrome-512x512.png",
   "maskableIconUrl": "https://unboxing-200c8.web.app/img/icons/android-chrome-maskable-512x512.png",
-  "monochromeIconUrl": "https://unboxing-200c8.web.app/img/icons/android-chrome-192x192.png",
+  "monochromeIconUrl": "https://unboxing-200c8.web.app/img/icons/android-chrome-512x512.png",
   "splashScreenFadeOutDuration": 300,
   "signingKey": {
     "path": "/Users/atalanta161/Desktop/Unboxing/unboxing-beta/android.keystore",
     "alias": "android"
   },
-  "appVersionName": "1",
-  "appVersionCode": 1,
+  "appVersionName": "2",
+  "appVersionCode": 2,
   "shortcuts": [],
   "generatorApp": "bubblewrap-cli",
   "webManifestUrl": "https://unboxing-200c8.web.app/manifest.json",
   "fallbackType": "customtabs",
-  "features": {
-    "playBilling": {
-      "enabled": true
-    }
-  },
+  "features": {},
   "alphaDependencies": {
-    "enabled": true
+    "enabled": false
   },
   "enableSiteSettingsShortcut": true,
   "isChromeOSOnly": false,
@@ -43,5 +39,5 @@
   "fingerprints": [],
   "additionalTrustedOrigins": [],
   "retainedBundles": [],
-  "appVersion": "1"
+  "appVersion": "2"
 }

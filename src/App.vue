@@ -62,7 +62,7 @@ export default {
                 this.lastTimestampOfNoti = data.val().timestamp;
                 timestampSave = false;
               }
-              notis.push({commentId: data.key, postId: data.val().postId, postTitle: data.val().postTitle, comment: data.val().comment, timestamp: data.val().timestamp, read: data.val().read});
+              notis.push({commentId: data.key, ownerId: data.val().ownerId, postId: data.val().postId, postTitle: data.val().postTitle, comment: data.val().comment, timestamp: data.val().timestamp, read: data.val().read});
               this.unread++;
             })
             if(!timestampSave && window.$('.sidebar-right').css('width') == '0px'){

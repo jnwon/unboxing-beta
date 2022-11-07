@@ -6,7 +6,7 @@
                     <span>{{$t('noti-noitem')}}</span>
                 </div>
                 <div v-else class="panel-group" style="float: right; width: 90%; padding-right: 30px; opacity: 0.7;">
-                    <div v-for="(noti, index) in notiRendered" :key="index" @click="openNotiPost(index, noti.commentId, noti.postId)" class="panel panel-info" :style="noti.read? 'opacity: 0.3' : ''">
+                    <div v-for="(noti, index) in notiRendered" :key="index" @click="openNotiPost(index, noti.commentId, noti.postId, noti.ownerId)" class="panel panel-info" :style="noti.read? 'opacity: 0.3' : ''">
                         <div class="panel-heading" style="padding: 5px 10px 5px 10px; display: flex; justify-content: space-between;"><span class="panel-heading-title" style="width: 70%">{{ noti.postTitle }}</span> <span style="font-size:smaller; padding-top: 2px;"> {{ noti.timeoffset }} &nbsp;<a href="javascript:void(0)" @click.prevent.stop="removeNoti(noti.commentId)"><i class="fa fa-times"/></a></span></div>
                         <div class="panel-body" style="padding: 10px 15px 10px 15px"> ㄴ <a class="notis" href="javascript:void(0)">{{ noti.comment }}</a></div>
                     </div>
@@ -76,17 +76,17 @@ export default {
             var currentTimestamp = new Date().getTime();
             this.noti.forEach((item) => {
                 var timeoffset = currentTimestamp + item.timestamp;
-                this.notiRendered.push({commentId: item.commentId, postId: item.postId, postTitle: item.postTitle, comment: item.comment, timestamp: item.timestamp, timeoffset: this.getLocaleTimeString(timeoffset), read: item.read})
+                this.notiRendered.push({commentId: item.commentId, ownerId: item.ownerId, postId: item.postId, postTitle: item.postTitle, comment: item.comment, timestamp: item.timestamp, timeoffset: this.getLocaleTimeString(timeoffset), read: item.read})
             })
         },
         closeNoti() {
             window.$('#noti').css("width", 0);
             window.$('.elements-right').css("opacity", 0);
         },
-        async openNotiPost(index, commentId, postId) {
+        async openNotiPost(index, commentId, postId, ownerId) {
             this.setNotiRead(index);
             await fb.db.ref('notifications/' + this.user.id + '/' + commentId + '/read').set(true);
-            location.href = '/viewer?postId=' + postId + '&ownerId=' + this.user.id + '#disqus_thread'
+            location.href = '/viewer?postId=' + postId + '&ownerId=' + ownerId + '#disqus_thread'
         },
         async removeNoti(commentId) {
             var filtered = this.notiRendered.filter((data) => {

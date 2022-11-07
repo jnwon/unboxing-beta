@@ -64,46 +64,128 @@
         if(searchParam('ownerId') != loginId){
           if(commenId != comment.id){
             sessionStorage.setItem('commentId', comment.id);
-            var notiListRef = db.ref('notifications/' + searchParam('ownerId'));
-            var newNotiRef = notiListRef.push();
-            var newNotiKey = newNotiRef.key;
-            var date = new Date();
-            try {
-              newNotiRef.set({
-                commentId: comment.id,
-                timestamp: -date.getTime(),
-                postId: searchParam('postId'),
-                postTitle: document.title,
-                comment: comment.text,
-                read: false
-              });
+            db.ref('fcmServerKey').get().then((snapshot) => {
+              if(snapshot.exists()) {
+                const fcmServerkey = snapshot.val();
+                var notiListRef = db.ref('notifications/' + searchParam('ownerId'));
+                var newNotiRef = notiListRef.push();
+                var newNotiKey = newNotiRef.key;
+                var date = new Date();
+                try {
+                  newNotiRef.set({
+                    commentId: comment.id,
+                    timestamp: -date.getTime(),
+                    postId: searchParam('postId'),
+                    postTitle: document.title,
+                    comment: comment.text,
+                    ownerId: searchParam('ownerId'),
+                    read: false
+                  });
 
-              db.ref('users/' + searchParam('ownerId') + '/fcmToken').get().then((snapshot) => {
-                if(snapshot.exists()){
-                  const fcmTo = snapshot.val();
-                  fetch('https://fcm.googleapis.com/fcm/send', {
-                    method: 'POST',
-                    headers: {
-                      Authorization: 'key=AAAA8zH9FHE:APA91bHTTjDc8XmXVQDhRRha8NnmUVu6ZLI1hVvrFKhAkTIc2BPR5HGtl9AemRX3uXEAPGUOngDcwvtroei0kJd1ETQYQNCnIKyXY5BmNRwqZiwRYd2ks36aGEiClwNwpPjhcjzl1rRz',
-                      "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                      to: fcmTo,
-                      notification: {
-                        title: "새로운 댓글이 달렸습니다: [" + document.title + "]",
-                        body: comment.text,
-                        icon: './img/icons/apple-touch-icon.png',
-                        click_action: location.href
+                  db.ref('users/' + searchParam('ownerId') + '/fcmToken').get().then((snapshot) => {
+                    if(snapshot.exists()){
+                      const fcmTo = snapshot.val();
+                      fetch('https://fcm.googleapis.com/fcm/send', {
+                        method: 'POST',
+                        headers: {
+                          Authorization: 'key=' + fcmServerkey,
+                          "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                          to: fcmTo,
+                          notification: {
+                            title: "새로운 댓글이 달렸습니다: [" + document.title + "]",
+                            body: comment.text,
+                            icon: './img/icons/apple-touch-icon.png',
+                            click_action: location.href
+                          }
+                        })
+                      })
+                    }
+                  })
+                  
+                  if(loginId) {
+                    var commentersRef = db.ref('posts/' + searchParam('postId') + '/commenters');
+                    commentersRef.orderByChild('userId').startAt(loginId).endAt(loginId).once("value", (snapshot) => {
+                      if(!snapshot.val()){
+                        var newCommenterRef = commentersRef.push();
+                        try {
+                          newCommenterRef.set({
+                            userId : loginId
+                          })
+                        } catch(e) {
+                          alert(e);
+                          console.log(e);
+                        }
                       }
                     })
-                  })
+                  }
+                } catch(e) {
+                  console.log(e);
+                  alert(e);
                 }
-              })
-              
-            } catch(e) {
-              console.log(e);
-              alert(e);
-            }
+              }
+            })
+          }
+        }
+        else {
+          if(commenId != comment.id){
+            sessionStorage.setItem('commentId', comment.id);
+            db.ref('fcmServerKey').get().then((snapshot) => {
+              if(snapshot.exists()) {
+                const fcmServerkey = snapshot.val();
+
+                var commentersRef = db.ref('posts/' + searchParam('postId') + '/commenters');
+                commentersRef.get().then((snapshot) => {
+                  if(snapshot.exists()) {
+                    snapshot.forEach((data) => {
+                      var notiListRef = db.ref('notifications/' + data.val().userId);
+                      var newNotiRef = notiListRef.push();
+                      var newNotiKey = newNotiRef.key;
+                      var date = new Date();
+                      try {
+                        newNotiRef.set({
+                          commentId: comment.id,
+                          timestamp: -date.getTime(),
+                          postId: searchParam('postId'),
+                          postTitle: document.title,
+                          comment: comment.text,
+                          ownerId: loginId,
+                          read: false
+                        });
+          
+                        db.ref('users/' + data.val().userId + '/fcmToken').get().then((snapshot) => {
+                          if(snapshot.exists()){
+                            const fcmTo = snapshot.val();
+                            fetch('https://fcm.googleapis.com/fcm/send', {
+                              method: 'POST',
+                              headers: {
+                                Authorization: 'key=' + fcmServerkey,
+                                "Content-Type": "application/json"
+                              },
+                              body: JSON.stringify({
+                                to: fcmTo,
+                                notification: {
+                                  title: "게시물 작성자가 새로운 댓글을 달았습니다: [" + document.title + "]",
+                                  body: comment.text,
+                                  icon: './img/icons/apple-touch-icon.png',
+                                  click_action: location.href
+                                }
+                              })
+                            })
+                          }
+                        })
+                        
+                      } catch(e) {
+                        console.log(e);
+                        alert(e);
+                      }
+                    })
+                  }
+                })
+
+              }
+            })
           }
         }
       })

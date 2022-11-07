@@ -3,9 +3,6 @@
 -keep class app.web.unboxing_200c8.twa.Application { <init>(); }
 -keep class app.web.unboxing_200c8.twa.DelegationService { <init>(); }
 -keep class app.web.unboxing_200c8.twa.LauncherActivity { <init>(); }
--keep class com.android.billingclient.api.ProxyBillingActivity { <init>(); }
--keep class com.google.androidbrowserhelper.playbilling.provider.PaymentActivity { <init>(); }
--keep class com.google.androidbrowserhelper.playbilling.provider.PaymentService { <init>(); }
 -keep class com.google.androidbrowserhelper.trusted.FocusActivity { <init>(); }
 -keep class com.google.androidbrowserhelper.trusted.ManageDataLauncherActivity { <init>(); }
 -keep class com.google.androidbrowserhelper.trusted.WebViewFallbackActivity { <init>(); }
