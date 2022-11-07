@@ -67,7 +67,7 @@
             <!-- Modal content-->
             <div class="modal-content">
                 <div class="modal-header">
-                    <h4 class="modal-title"> {{ announcementPopup.title }} </h4>
+                    <h4 class="modal-title" style="text-align: left"> {{ announcementPopup.title }} </h4>
                 </div>
                 <div class="modal-body" v-html="announcementPopup.contents">
                 </div>

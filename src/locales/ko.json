@@ -1,7 +1,9 @@
 {
-    "info-version" : "0.171",
+    "info-version" : "0.18",
     "info-version-label" : "Unboxing 버전 : ",
     "info-contact" : "개발자 연락처 : ",
+    "info-tou" : "이용약관",
+    "info-pp" : "개인정보처리방침",
     "info-oss" : "오픈소스 라이선스",
 
     "setting-email-register" : "이메일 등록",
@@ -11,6 +13,7 @@
     "setting-remove" : "계정 삭제",
     "setting-accouncement-no" : "공지 보이기",
     "setting-accouncement-yes" : "공지 숨기기",
+    "setting-termsofuse-header" : "아래의 이용약관을 읽고 동의 버튼을 눌러주세요.",
     "setting-privacypolicy-header" : "아래의 개인정보 수집정책을 읽고 동의 버튼을 눌러주세요.",
     "setting-privacypolicy-close" : "닫기",
     "setting-privacypolicy-agree" : "동의",

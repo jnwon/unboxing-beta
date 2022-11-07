@@ -1,7 +1,9 @@
 {
-    "info-version" : "0.171",
+    "info-version" : "0.18",
     "info-version-label" : "Unboxing Version : ",
     "info-contact" : "To Developer : ",
+    "info-tou" : "Terms Of Use",
+    "info-pp" : "Privacy Policy",
     "info-oss" : "Open Source Licenses",
 
     "setting-email-register" : "Register E-mail",
@@ -11,6 +13,7 @@
     "setting-remove" : "Remove Account",
     "setting-accouncement-no" : "Show Accouncement",
     "setting-accouncement-yes" : "Hide Accouncement",
+    "setting-termsofuse-header" : "Please read carefully following terms of use, and click 'Agree'.",
     "setting-privacypolicy-header" : "Please read carefully following policy of collecting privacy, and click 'Agree'.",
     "setting-privacypolicy-close" : "Close",
     "setting-privacypolicy-agree" : "Agree",

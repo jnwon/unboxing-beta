@@ -51,17 +51,39 @@
     
         </div>
     </div>
+
+    <div id="termsOfUse" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3> {{ $t('setting-termsofuse-header') }} </h3>
+                </div>
+                <div class="modal-body" style="text-align: left; height: 450px; overflow-x: hidden">
+                    <div v-html="termsOfUse"></div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-info" data-dismiss="modal" @click="touAgree()"> {{ $t('setting-privacypolicy-agree') }} </button>
+                    <button class="btn btn-default" data-dismiss="modal"> {{ $t('setting-privacypolicy-close') }} </button>
+                </div>
+            </div>
+    
+        </div>
+    </div>
 </template>
 
 <script>
 import router from "@/router";
 import fb from '@/firebase';
+import tou from '@/assets/TermsOfUse.js'
 import { mapState, mapMutations } from "vuex";
 
 export default {
     name: 'view-Editor',
     data() {
         return {
+            termsOfUse : '',
+            termsOfUseAgree : false,
             isEditmode : false,
             isEmpty : true,
             isManager : false,
@@ -111,6 +133,8 @@ export default {
         // window.$('.fa-save').on('hide.bs.tooltip', function() {
         //     window.$('.fa-save + .tooltip > .tooltip-inner').css('display', 'none');
         // })
+
+        this.termsOfUse = tou;
 
         if(this.isManager){
             fb.db.ref('announcementPopup').get().then((snapshot) => {
@@ -337,7 +361,18 @@ export default {
                 alert(e);
             }
         },
+        touAgree() {
+            this.termsOfUseAgree = true;
+            this.submitPost();
+        },
         async submitPost(loadedTempPostId, isSavedForTemp) {
+            if(this.ub_user.tutorial == 2 && !this.termsOfUseAgree){
+                window.$('#summernote').tooltip('destroy');
+                window.$(".fa-upload").tooltip('destroy');
+                window.$('#termsOfUse').modal('show');
+                return 0;
+            }
+
             var date = new Date();
             var boxLock = this.lock;
             var announcement = this.announcement;

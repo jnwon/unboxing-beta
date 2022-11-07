@@ -40,6 +40,8 @@
                 <div class="modal-body" style="text-align: left;">
                     <p>・&nbsp;{{ $t('info-version-label') + $t('info-version') }}</p>
                     <p>・&nbsp;{{ $t('info-contact') }}<a href="mailto:unboxing.manager@gmail.com?subject=[Unboxing]">unboxing.manager@gmail.com</a></p>
+                    <p>・&nbsp;<a href="javascript:void(0)" onclick="window.$('#termsOfUse').modal('show')"> {{ $t('info-tou') }} </a></p>
+                    <p>・&nbsp;<a href="javascript:void(0)" onclick="window.$('#privacyPolicy').modal('show')"> {{ $t('info-pp') }} </a></p>
                     <p>・&nbsp;{{ $t('info-oss') }}</p>
                     <p v-for="(os, index) in ossList" :key="index" style="padding-left: 10px; margin-bottom: 5px;">
                         <span>{{os.libraryName}}&nbsp;|&nbsp;{{os.version}}&nbsp;|&nbsp;{{os._license}}&nbsp;License</span>
@@ -55,14 +57,32 @@
             <!-- Modal content-->
             <div class="modal-content">
                 <div class="modal-header">
-                    <h3> {{ $t('setting-privacypolicy-header') }} </h3>
+                    <h3> {{ newEmail? $t('setting-privacypolicy-header') : '' }} </h3>
                 </div>
                 <div class="modal-body" style="text-align: left; height: 450px; overflow-x: hidden">
                     <div v-html="privacyPolicy"></div>
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-default" data-dismiss="modal"> {{ $t('setting-privacypolicy-close') }} </button>
-                    <button class="btn btn-info" data-dismiss="modal" @click="ppAgree()"> {{ $t('setting-privacypolicy-agree') }} </button>
+                    <button class="btn btn-info" data-dismiss="modal" v-if="newEmail" @click="ppAgree()"> {{ $t('setting-privacypolicy-agree') }} </button>
+                </div>
+            </div>
+    
+        </div>
+    </div>
+
+    <div id="termsOfUse" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>  </h3>
+                </div>
+                <div class="modal-body" style="text-align: left; height: 450px; overflow-x: hidden">
+                    <div v-html="termsOfUse"></div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-default" data-dismiss="modal"> {{ $t('setting-privacypolicy-close') }} </button>
                 </div>
             </div>
     
@@ -75,6 +95,7 @@ import fb from '@/firebase';
 import oss from '@/oss/ossList.json';
 import emailjs from '@emailjs/browser';
 import pp from '@/assets/PrivacyPolicy.js'
+import tou from '@/assets/TermsOfUse.js'
 
 export default {
     name: 'Setting-Panel',
@@ -93,6 +114,7 @@ export default {
             ranNum: null,
             privacyPolicyAgree: false,
             privacyPolicy: '',
+            termsOfUse: '',
             newUserName: '',
             newEmail: '',
             ossList: []
@@ -110,13 +132,14 @@ export default {
 
         if(this.userInfo.user){
             this.newUserName = this.userInfo.user.name;
-            this.newEmail =  this.userInfo.user.email;
+            // this.newEmail =  this.userInfo.user.email;
             if(this.userInfo.user.privacyPolicyAgree == true){
                 this.privacyPolicyAgree = true;
             }
         }
 
         this.privacyPolicy = pp;
+        this.termsOfUse = tou;
     },
     methods: {
         closeSetting() {
@@ -199,7 +222,8 @@ export default {
             }
         },
         cancelEditEmail() {
-            this.newEmail = this.userInfo.user.email;
+            // this.newEmail = this.userInfo.user.email;
+            this.newEmail = '';
             this.authingEmail = false;
             this.editingEmail = false;
         },

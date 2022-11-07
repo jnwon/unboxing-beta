@@ -56,7 +56,10 @@
         var commenId = sessionStorage.getItem('commentId')
         var vuex = localStorage.getItem('vuex');
         if(vuex){
-          loginId = JSON.parse(vuex).ub_user.id;
+          ub_user = JSON.parse(vuex).ub_user;
+          if(ub_user){
+            loginId = ub_user.id;
+          }
         }
         if(searchParam('ownerId') != loginId){
           if(commenId != comment.id){
