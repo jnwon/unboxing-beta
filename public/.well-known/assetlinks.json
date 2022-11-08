@@ -1,10 +1,10 @@
-[
-  {
-    "relation": ["delegate_permission/common.handle_all_urls"],
-    "target": {
-      "namespace": "android_app",
-      "package_name": "app.web.unboxing_200c8.twa",
-      "sha256_cert_fingerprints": ["9B:A2:B8:04:28:F3:B1:E9:C4:09:94:46:87:7A:23:6B:EE:3C:46:B5:17:78:B3:DE:78:5D:BC:1B:C4:B6:6D:A2"]
-    }
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "app.web.unboxing_200c8.twa",
+    "sha256_cert_fingerprints": [
+      "45:5B:13:27:0E:A9:99:1D:4E:0B:7A:35:DA:E9:62:AF:44:EE:3D:C8:0D:E1:1C:BF:D9:B5:5A:DE:1E:F2:F6:DC"
+    ]
   }
-]
+}]

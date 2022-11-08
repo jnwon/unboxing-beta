@@ -55,8 +55,8 @@ android {
         applicationId "app.web.unboxing_200c8.twa"
         minSdkVersion 19
         targetSdkVersion 31
-        versionCode 2
-        versionName "2"
+        versionCode 3
+        versionName "3"
 
         // The name for the application
         resValue "string", "appName", twaManifest.name
@@ -196,6 +196,8 @@ repositories {
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
+    
+        implementation 'com.google.androidbrowserhelper:billing:1.0.0-alpha09'
     
         implementation 'com.google.androidbrowserhelper:androidbrowserhelper:2.4.0'
     
