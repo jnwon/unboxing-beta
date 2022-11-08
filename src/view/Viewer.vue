@@ -3,11 +3,30 @@
         <div class="col-sm-2"></div>
             <div class="col-sm-8">
                 <div class="row" style="height: auto; min-height: 85%;">
-                    <h3 v-if="postTitle == ''"><i class="fa fa-spinner fa-spin"/></h3>
-                    <h3 id="post-title" style="text-align: left;">{{postTitle}}&nbsp;<span v-if="lock" style="color: green; font-size: medium;"><i class="fa fa-lock" style="position: relative; bottom: 2px"/></span></h3>
+                    <div style="display: flex">
+                        <h3 v-if="postTitle == ''"><i class="fa fa-spinner fa-spin"/></h3>
+                        <h3 id="post-title" style="text-align: left; margin-right: 5px">{{postTitle}}&nbsp;<span v-if="lock" style="color: green; font-size: medium;"><i class="fa fa-lock" style="position: relative; bottom: 2px"/></span></h3>
+                        <a href="#" class="dropdown"><h3 style="font-size:medium; padding-top: 3px" class="dropdown-toggle" data-toggle="dropdown"><i class="fas fa-ban"></i></h3>
+                            <ul class="dropdown-menu dropdown-menu-right" style="text-align:center">
+                                <li @click="reportPost()"><span> {{ $t('post-report') }} </span></li>
+                                <li class="divider"></li>
+                                <li @click="blockPost()"><span> {{ $t('post-block') }} </span></li>
+                            </ul>
+                        </a>
+                    </div>
                     <div style="display: flex; justify-content: space-between;">
                         <span style="font-size:small; color:grey;">{{postDateTime}}<a :href="postUrl+'#disqus_thread'" style="margin-left: 5px"><i class="fas fa-comment-dots"></i></a></span>
-                        <span style="font-size:small; color:grey">{{postUserName}}({{postUserId}})&nbsp;<a :href="'/'+postUserIdFull"><i class="fa fa-home"></i></a></span>
+                        <span style="font-size:small; color:grey">{{postUserName}}({{postUserId}})&nbsp;
+                            <a :href="'/'+postUserIdFull" style="margin-right: 8px"><i class="fa fa-home"></i></a>
+                            <a href="#" class="dropdown"><i class="fas fa-ban dropdown-toggle" data-toggle="dropdown"></i>
+                                <ul class="dropdown-menu dropdown-menu-right" style="text-align:center">
+                                    <li @click="reportUser()"><span> {{ $t('user-report') }} </span></li>
+                                    <li class="divider"></li>
+                                    <li @click="blockUser()"><span> {{ $t('user-block') }} </span></li>
+                                </ul>
+                            </a>
+                        </span>
+                        
                     </div>
                     <br/>
                     <div class="alert alert-warning" v-if="parent" style="text-align:left; height: 55px;"><span style="font-size:x-large; margin-left: 10px;">⌜ </span><a :href="'/viewer?postId='+parent" style="color:#8a6d3b; font-size:medium; position:relative; bottom: 8px;">{{parentTitle}}</a></div>
@@ -53,6 +72,25 @@
     
         </div>
     </div>
+
+    <div id="reportForm" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3> {{ $t('report-form-header') }} </h3>
+                </div>
+                <div class="modal-body" style="text-align: left; height: auto; overflow-x: hidden">
+                    <textarea class="form-control" rows="10" v-model="reportBody"></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-info" data-dismiss="modal" @click="submitReport()"> {{ $t('report-form-submit') }} </button>
+                    <button class="btn btn-default" data-dismiss="modal"> {{ $t('report-form-cancel') }} </button>
+                </div>
+            </div>
+    
+        </div>
+    </div>
 </template>
 
 <script>
@@ -60,6 +98,7 @@ import router from '@/router';
 import fb from '@/firebase';
 import { mapState, mapMutations } from 'vuex';
 import Clipboard from 'clipboard'
+import emailjs from '@emailjs/browser';
 
 export default {
     name: 'view-Viewer',
@@ -82,7 +121,9 @@ export default {
             children: {},
             parentTitle : '',
             parentContents: '',
-            postUrl: ''
+            postUrl: '',
+            reportMode: '',
+            reportBody: ''
         }
     },
     created(){
@@ -268,10 +309,10 @@ export default {
         }
     },
     computed: {
-        ...mapState(['ub_fingerPrint', 'ub_user', 'ub_tags'])
+        ...mapState(['ub_fingerPrint', 'ub_user', 'ub_tags', 'ub_blockedList'])
     },
     methods: {
-        ...mapMutations(['setTutorialStep']),
+        ...mapMutations(['setTutorialStep', 'setBlockedPost', 'setBlockedUser']),
         moveToList() {
             var ownerId = sessionStorage.getItem('currentUnboxingOwnerId');
             if(this.ub_user && this.ub_user.tutorial == 3){
@@ -356,8 +397,75 @@ export default {
                 this.popupCurrent = null;
             }
             fb.db.ref('announcementPopup').set(this.popupCurrent);
+        },
+        reportPost() {
+            if(this.ub_user){
+                this.reportMode = 'post';
+                window.$('#reportForm').modal('show');
+            }
+            else {
+                alert(this.$t('report-alert'));
+            }
+        },
+        reportUser() {
+            if(this.ub_user){
+                this.reportMode = 'user';
+                window.$('#reportForm').modal('show');
+            }
+            else {
+                alert(this.$t('report-alert'));
+            }
+        },
+        submitReport() {
+            var templateId = 'template_uis7qxi';
+            var body = '';
+            try{
+                if(this.reportMode == 'post'){
+                    body = this.ub_user.name + '(' + this.ub_user.id + ') 님으로부터의 게시물 신고 | '
+                                + '게시물 제목: ' + this.postTitle + '(' + this.postUrl + ') | '
+                                + '게시물 작성자: ' + this.postUserName + '(' + this.postUserIdFull + ') | '
+                                + '신고내용: ' + this.reportBody + ' ==================================='
+                    emailjs.init('F69oNO4Ob024R0ygE');
+                    emailjs.send("service_qqdc6ym",templateId,{
+                        title: '[Unboxing]게시물 신고',
+                        mail_to: 'unboxing.manager@gmail.com',
+                        body: body
+                    },'F69oNO4Ob024R0ygE');
+                }
+                else{
+                    body = this.ub_user.name + '(' + this.ub_user.id + ') 님으로부터의 이용자 신고 | '
+                                + '신고 이용자: ' + this.postUserName + '(' + this.postUserIdFull + ') | '
+                                + '관련 게시물: ' + this.postTitle + '(' + this.postUrl + ') | '
+                                + '신고내용: ' + this.reportBody + ' ==================================='
+                    emailjs.init('F69oNO4Ob024R0ygE');
+                    emailjs.send("service_qqdc6ym",templateId,{
+                        title: '[Unboxing]이용자 신고',
+                        mail_to: 'unboxing.manager@gmail.com',
+                        body: body
+                    },'F69oNO4Ob024R0ygE');
+                }
+                alert(this.$t('report-sucsess'));
+            } catch (e) {
+                console.log(e);
+                alert(e);
+            }
+        },
+        blockPost() {
+            if(confirm(this.$t('block-confirm'))){
+                this.setBlockedPost(this.$route.query.postId);
+                const newBlockedPostRef = fb.db.ref('users/' + this.ub_user.id + '/blockedPosts').push();
+                newBlockedPostRef.set({postId: this.$route.query.postId});
+                location.href = '/list'
+            }
+        },
+        blockUser() {
+            if(confirm(this.$t('block-confirm'))){
+                this.setBlockedUser(this.postUserIdFull);
+                const newBlockedUserRef = fb.db.ref('users/' + this.ub_user.id + '/blockedUsers').push();
+                newBlockedUserRef.set({userId: this.postUserIdFull});
+                location.href = '/list'
+            }
         }
-
     }
 }
 </script>

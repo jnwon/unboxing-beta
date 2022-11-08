@@ -5,6 +5,10 @@ export default createStore({
     state: {
         ub_user: null,
         ub_noti: [],
+        ub_blockedList : {
+            blockedPosts : [],
+            blockedUsers : []
+        },
         ub_tags: null,
         ub_fingerPrint: '',
         ub_lastCheckedPopup: '' 
@@ -48,6 +52,18 @@ export default createStore({
         },
         setCheckPopup(state, postId) {
             state.ub_lastCheckedPopup = postId;
+        },
+        setBlockedPosts(state, postlist) {
+            state.ub_blockedList.blockedPosts = postlist;
+        },
+        setBlockedUsers(state, userlist) {
+            state.ub_blockedList.blockedUsers = userlist;
+        },
+        setBlockedPost(state, postId) {
+            state.ub_blockedList.blockedPosts.push(postId);
+        },
+        setBlockedUser(state, userId) {
+            state.ub_blockedList.blockedUsers.push(userId);
         }
     },
     plugins: [

@@ -1,10 +1,21 @@
 {
-    "info-version" : "0.181",
+    "info-version" : "0.182",
     "info-version-label" : "Unboxing 버전 : ",
     "info-contact" : "개발자 연락처 : ",
     "info-tou" : "이용약관",
     "info-pp" : "개인정보처리방침",
     "info-oss" : "오픈소스 라이선스",
+
+    "post-report" : "게시물 신고",
+    "post-block" : "게시물 차단",
+    "user-report" : "이용자 신고",
+    "user-block" : "이용자 차단",
+    "report-form-header" : "신고내용을 작성해주세요.",
+    "report-form-submit" : "제출",
+    "report-form-cancel" : "취소",
+    "report-sucsess" : "신고내용이 접수되었습니다.",
+    "report-alert" : "개인계정이 필요한 서비스입니다.",
+    "block-confirm" : "정말로 차단하시겠습니까?",
 
     "setting-email-register" : "이메일 등록",
     "setting-placeholder-authnumber" : "인증번호",

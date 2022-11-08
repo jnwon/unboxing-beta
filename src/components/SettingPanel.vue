@@ -233,9 +233,10 @@ export default {
                 try{
                     emailjs.init('F69oNO4Ob024R0ygE');
                     emailjs.send("service_qqdc6ym",templateId,{
+                        title: 'Unboxing 계정 백업',
                         to_name: this.userInfo.user.name,
                         accountkey: this.userInfo.fingerPrint,
-                        mail_to: this.newEmail,
+                        mail_to: this.userInfo.user.email,
                         reply_to: 'unboxing.manager@gmail.com'
                     },'F69oNO4Ob024R0ygE');
     

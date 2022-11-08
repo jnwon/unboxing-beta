@@ -63,7 +63,7 @@
       }
     },
     computed: {
-      ...mapState(['ub_user', 'ub_tags', 'ub_fingerPrint'])
+      ...mapState(['ub_user', 'ub_tags', 'ub_fingerPrint', 'ub_blockedList'])
     },
     created() {
       if(navigator.language != 'ko' && navigator.language != 'ko-KR'){
@@ -85,6 +85,22 @@
           await fb.db.ref('users/' + userId).get().then((snapshot) => {
             console.log(snapshot.val().name);
             this.setUserInfo({id: userId, name: snapshot.val().name, email: snapshot.val().email, lastTimestampOfNoti: snapshot.val().lastTimestampOfNoti, tutorial: tutorial, noAnnouncement: noAnnouncement, checkEmergency: checkEmergency, privacyPolicyAgree: privacyPolicyAgree})
+            
+            var blockedPosts = [];
+            fb.db.ref('users/' + userId + '/blockedPosts').get().then((snapshot) => {
+              snapshot.forEach((data) => {
+                blockedPosts.push(data.val().postId);
+              })
+              this.setBlockedPosts(blockedPosts);
+            });
+
+            var blockedUsers = [];
+            fb.db.ref('users/' + userId + '/blockedUsers').get().then((snapshot) => {
+              snapshot.forEach((data) => {
+                blockedUsers.push(data.val().userId);
+              })
+              this.setBlockedUsers(blockedUsers);
+            });
           })
           var tags = [];
           await fb.db.ref('users/' + userId + '/tags').get().then((snapshot) => {
@@ -101,7 +117,7 @@
       }
     },
     methods: {
-      ...mapMutations(['setUserInfo', 'setTags', 'setFingerPrint']),
+      ...mapMutations(['setUserInfo', 'setTags', 'setFingerPrint', 'setBlockedPosts', 'setBlockedUsers']),
       async createAccount() {
         if(!this.nameInput){
           window.$('#nameInput').focus();
@@ -184,6 +200,18 @@
                   lastTimestampOfNoti : 0,
                   tutorial: 0
                 });
+
+                var blockedPosts = [];
+                for (var hey in userInfoObj.blockedPosts) {
+                  blockedPosts.push(userInfoObj.blockedPosts[hey].postId);
+                }
+                this.setBlockedPosts(blockedPosts);
+
+                var blockedUsers = [];
+                for (var jey in userInfoObj.blockedUsers) {
+                  blockedUsers.push(userInfoObj.blockedUsers[jey].userId);
+                }
+                this.setBlockedUsers(blockedUsers);
 
                 var tags = []
                 for (var key in userInfoObj.tags) {

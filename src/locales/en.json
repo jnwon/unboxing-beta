@@ -1,10 +1,21 @@
 {
-    "info-version" : "0.181",
+    "info-version" : "0.182",
     "info-version-label" : "Unboxing Version : ",
     "info-contact" : "To Developer : ",
     "info-tou" : "Terms Of Use",
     "info-pp" : "Privacy Policy",
     "info-oss" : "Open Source Licenses",
+
+    "post-report" : "Report this post",
+    "post-block" : "Block this post",
+    "user-report" : "Report this user",
+    "user-block" : "Block this user",
+    "report-form-header" : "Plese fill the body of the report in.",
+    "report-form-submit" : "Submit",
+    "report-form-cancel" : "Cancel",
+    "report-sucsess" : "Report has been accepted.",
+    "report-alert" : "You need your own account to proceed.",
+    "block-confirm" : "Are you sure to block this post or user?",
 
     "setting-email-register" : "Register E-mail",
     "setting-placeholder-authnumber" : "Auth Number",

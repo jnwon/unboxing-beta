@@ -329,7 +329,7 @@ export default {
         }
     },
     computed: {
-        ...mapState(['ub_user', 'ub_tags', 'ub_fingerPrint', 'ub_lastCheckedPopup'])
+        ...mapState(['ub_user', 'ub_tags', 'ub_fingerPrint', 'ub_lastCheckedPopup', 'ub_blockedList'])
     },
     methods: {
         ...mapMutations(['setUserInfo', 'setTags', 'setFingerPrint', 'setTutorialStep', 'setUserName', 'setEmail', 'setNoAnnouncement', 'setCheckPopup', 'setPrivacyPolicyAgree']),
@@ -458,13 +458,15 @@ export default {
                         timeoffset = this.currentTimestamp + timestamp;
                         if(!data.val().temp){
                             if(!data.val().lock || (this.ub_user && data.val().userId == this.ub_user.id)){
-                                if(!this.isManager && (data.val().userId != process.env.VUE_APP_MANAGER_USERID)){
-                                    this.postData.push({postId: data.key, title: data.val().title, userId: data.val().userId, userName: data.val().userName, timeOffset: this.getLocaleTimeString(timeoffset), lock: data.val().lock});
-                                    pushCount++;
-                                }
-                                else if(this.isManager){
-                                    this.postData.push({postId: data.key, title: data.val().title, userId: data.val().userId, userName: data.val().userName, timeOffset: this.getLocaleTimeString(timeoffset), lock: data.val().lock});
-                                    pushCount++;
+                                if(!this.ub_user || (this.ub_blockedList.blockedPosts.indexOf(data.key) < 0 && this.ub_blockedList.blockedUsers.indexOf(data.val().userId) < 0)){
+                                    if(!this.isManager && (data.val().userId != process.env.VUE_APP_MANAGER_USERID)){
+                                        this.postData.push({postId: data.key, title: data.val().title, userId: data.val().userId, userName: data.val().userName, timeOffset: this.getLocaleTimeString(timeoffset), lock: data.val().lock});
+                                        pushCount++;
+                                    }
+                                    else if(this.isManager){
+                                        this.postData.push({postId: data.key, title: data.val().title, userId: data.val().userId, userName: data.val().userName, timeOffset: this.getLocaleTimeString(timeoffset), lock: data.val().lock});
+                                        pushCount++;
+                                    }
                                 }
                             }
                         }
@@ -503,13 +505,15 @@ export default {
                             timeoffset = this.currentTimestamp + timestamp;
                             if(!data.val().temp){
                                 if(!data.val().lock || (this.ub_user && data.val().userId == this.ub_user.id)){
-                                    if(!this.isManager && (data.val().userId != process.env.VUE_APP_MANAGER_USERID)){
-                                        this.postData.push({postId: data.key, title: data.val().title, userId: data.val().userId, userName: data.val().userName, timeOffset: this.getLocaleTimeString(timeoffset), lock: data.val().lock});
-                                        pushCount++;
-                                    }
-                                    else if(this.isManager){
-                                        this.postData.push({postId: data.key, title: data.val().title, userId: data.val().userId, userName: data.val().userName, timeOffset: this.getLocaleTimeString(timeoffset), lock: data.val().lock});
-                                        pushCount++;
+                                    if(!this.ub_user || (this.ub_blockedList.blockedPosts.indexOf(data.key) < 0 && this.ub_blockedList.blockedUsers.indexOf(data.val().userId) < 0)){
+                                        if(!this.isManager && (data.val().userId != process.env.VUE_APP_MANAGER_USERID)){
+                                            this.postData.push({postId: data.key, title: data.val().title, userId: data.val().userId, userName: data.val().userName, timeOffset: this.getLocaleTimeString(timeoffset), lock: data.val().lock});
+                                            pushCount++;
+                                        }
+                                        else if(this.isManager){
+                                            this.postData.push({postId: data.key, title: data.val().title, userId: data.val().userId, userName: data.val().userName, timeOffset: this.getLocaleTimeString(timeoffset), lock: data.val().lock});
+                                            pushCount++;
+                                        }
                                     }
                                 }
                             }
