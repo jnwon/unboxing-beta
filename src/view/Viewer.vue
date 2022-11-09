@@ -6,7 +6,7 @@
                     <div style="display: flex">
                         <h3 v-if="postTitle == ''"><i class="fa fa-spinner fa-spin"/></h3>
                         <h3 id="post-title" style="text-align: left; margin-right: 5px">{{postTitle}}&nbsp;<span v-if="lock" style="color: green; font-size: medium;"><i class="fa fa-lock" style="position: relative; bottom: 2px"/></span></h3>
-                        <a href="#" class="dropdown"><h3 style="font-size:medium; padding-top: 3px" class="dropdown-toggle" data-toggle="dropdown"><i class="fas fa-ban"></i></h3>
+                        <a href="#" class="dropdown" v-if="!this.ub_user || this.ub_user.id != postUserIdFull"><h3 style="font-size:medium; padding-top: 3px" class="dropdown-toggle" data-toggle="dropdown"><i class="fas fa-ban"></i></h3>
                             <ul class="dropdown-menu dropdown-menu-right" style="text-align:center">
                                 <li @click="reportPost()"><span> {{ $t('post-report') }} </span></li>
                                 <li class="divider"></li>
@@ -18,7 +18,7 @@
                         <span style="font-size:small; color:grey;">{{postDateTime}}<a :href="postUrl+'#disqus_thread'" style="margin-left: 5px"><i class="fas fa-comment-dots"></i></a></span>
                         <span style="font-size:small; color:grey">{{postUserName}}({{postUserId}})&nbsp;
                             <a :href="'/'+postUserIdFull" style="margin-right: 8px"><i class="fa fa-home"></i></a>
-                            <a href="#" class="dropdown"><i class="fas fa-ban dropdown-toggle" data-toggle="dropdown"></i>
+                            <a href="#" class="dropdown" v-if="!this.ub_user || this.ub_user.id != postUserIdFull"><i class="fas fa-ban dropdown-toggle" data-toggle="dropdown"></i>
                                 <ul class="dropdown-menu dropdown-menu-right" style="text-align:center">
                                     <li @click="reportUser()"><span> {{ $t('user-report') }} </span></li>
                                     <li class="divider"></li>
@@ -451,19 +451,29 @@ export default {
             }
         },
         blockPost() {
-            if(confirm(this.$t('block-confirm'))){
-                this.setBlockedPost(this.$route.query.postId);
-                const newBlockedPostRef = fb.db.ref('users/' + this.ub_user.id + '/blockedPosts').push();
-                newBlockedPostRef.set({postId: this.$route.query.postId});
-                location.href = '/list'
+            if(this.ub_user){
+                if(confirm(this.$t('block-confirm'))){
+                    this.setBlockedPost(this.$route.query.postId);
+                    const newBlockedPostRef = fb.db.ref('users/' + this.ub_user.id + '/blockedPosts').push();
+                    newBlockedPostRef.set({postId: this.$route.query.postId});
+                    location.href = '/list'
+                }
+            }
+            else {
+                alert(this.$t('report-alert'));
             }
         },
         blockUser() {
-            if(confirm(this.$t('block-confirm'))){
-                this.setBlockedUser(this.postUserIdFull);
-                const newBlockedUserRef = fb.db.ref('users/' + this.ub_user.id + '/blockedUsers').push();
-                newBlockedUserRef.set({userId: this.postUserIdFull});
-                location.href = '/list'
+            if(this.ub_user){
+                if(confirm(this.$t('block-confirm'))){
+                    this.setBlockedUser(this.postUserIdFull);
+                    const newBlockedUserRef = fb.db.ref('users/' + this.ub_user.id + '/blockedUsers').push();
+                    newBlockedUserRef.set({userId: this.postUserIdFull});
+                    location.href = '/list'
+                }
+            }
+            else {
+                alert(this.$t('report-alert'));
             }
         }
     }
