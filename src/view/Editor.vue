@@ -1,5 +1,6 @@
 <template>
     <div class="container" v-if="this.ub_user">
+        <div id="overlay" style="display: none"><h3 style="position: fixed; top: 50%; left: 50%"><i class="fa fa-spinner fa-spin"/></h3></div>
         <div class="col-sm-1"></div>
         <div class="col-sm-10">
             <div class="row">
@@ -218,11 +219,13 @@ export default {
                     for(var i=0; i < files.length; i++){
                         var ref = fb.storage.ref().child(new Date().getTime()+'_'+files[i].name);
                         window.$('#summernote').summernote('disable');
+                        window.$('#overlay').show();
                         await ref.put(files[i]).then(() => {
                             ref.getDownloadURL().then(async (url) => {
                                 await window.$('#summernote').summernote('insertImage', url, function ($image) {
                                     $image.css('max-width', '100%')
                                 });
+                                window.$('#overlay').hide();
                                 window.$('#summernote').summernote('enable');
                                 window.$('#summernote').summernote('pasteHTML', '<p style="text-align: left;"><br/></p>');
                             })
@@ -540,4 +543,14 @@ export default {
 /* .fa-save + .tooltip > .tooltip-inner {
     display: none;
 } */
+
+#overlay {
+    background-color: rgba(128, 128, 128, 0.3);
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1;
+}
 </style>
