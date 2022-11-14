@@ -22,13 +22,23 @@
                         </div>
                     </a>
                 </div>
-                <div class="list-group" v-popover:bottom="$t('tooltip-tutorial-4-3')">
+                <div v-if="myList" class="list-group" v-popover:bottom="$t('tooltip-tutorial-4-3')">
                     <a v-for="(post, index) in postData" :key="index" @click="moveToViewer(post.postId, post.userId)" :id="post.postId" href="#" class="list-group-item" style="display: flex; justify-content: space-between;">
                         <div class="postTitle" style="text-align: left;">
                             <span>{{post.title}}&nbsp;<i v-if="post.lock" class="fa fa-lock" style="color: green; font-size: smaller;"/></span>
                         </div>
                         <div class="postMeta">
                             <span :style="'font-size:small; color:' + (this.ub_user && post.userId == this.ub_user.id? 'coral' : 'lightgrey')">{{post.userName}}</span><span style="font-size:small; color:lightgrey"> | {{post.timeOffset}}</span>
+                        </div>
+                    </a>
+                </div>
+                <div v-else class="list-group">
+                    <a v-for="(user, index) in userData" :key="index" :href="'/' + user.id" class="list-group-item" style="display: flex; justify-content: space-between;">
+                        <div class="postTitle" style="text-align: left;">
+                            <span> {{ user.name + $t('unboxing-name') + ' Unboxing' }} </span>
+                        </div>
+                        <div class="postMeta">
+                            <span :style="'font-size:small; color:' + (this.ub_user && user.id == this.ub_user.id? 'coral' : 'lightgrey')">{{user.name + '(' + user.id.slice(user.id.length-4) + ')'}}</span><span style="font-size:small; color:lightgrey"> | {{user.timeOffset}}</span>
                         </div>
                     </a>
                 </div>
@@ -104,8 +114,11 @@ export default {
             lastTimestamp : 0,
             announceData: [],
             postData: [],
+            userData: [],
+            allUsers: [],
             MyData: [],
             myNextIndex: -1,
+            userNextPage: 0,
             ubTags: [],
             tags: [],
             tagsEditing : [],
@@ -258,7 +271,12 @@ export default {
             await this.fetchMy();
         }
         else{
-            await this.fetchAll();
+            if(this.$route.query.postId){
+                await this.fetchAll();
+            }
+            else{
+                await this.fetchUsers();
+            }
         }
 
         if(window.Kakao.isInitialized()){
@@ -359,7 +377,12 @@ export default {
                 this.fetchMy();
             }
             else{
-                this.fetchAll();
+                if(this.$route.params.userId){
+                    await this.fetchAll();
+                }
+                else{
+                    await this.fetchUsers();
+                }
             }
             if(this.ub_user && this.ub_user.tutorial == 4){
                 window.$("#myBtn").tooltip('destroy');
@@ -441,6 +464,30 @@ export default {
             this.editTag = false;
             this.fetchMy();
         },
+        async fetchUsers() {
+            this.fetching = true;
+            this.userData = [];
+            this.allUsers = [];
+            this.currentTimestamp = new Date().getTime();
+            try {
+                await fb.db.ref('users').orderByChild('lastUploadTimestamp').once("value", (snapshot) => {
+                    snapshot.forEach((data) => {
+                        if(!this.ub_user || this.ub_blockedList.blockedUsers.indexOf(data.key) < 0){
+                            this.allUsers.push({id: data.key, name: data.val().name, timeOffset : data.val().lastUploadTimestamp? this.getLocaleTimeString(data.val().lastUploadTimestamp + this.currentTimestamp) : null});
+                        }
+                    })
+                    var window = this.allUsers.length < 10 ? this.allUsers.length : 10;
+                    for(var i=0; i < window; i++) {
+                        this.userData.push(this.allUsers[i])
+                    }
+                    this.userNextPage = 1;
+                })
+                this.fetching = false;
+            } catch(e) {
+                console.log(e);
+                alert(e);
+            }
+        },
         async fetchAll() {
             this.fetching = true;
             this.postData = [];
@@ -492,43 +539,52 @@ export default {
                 this.myNextIndex = i;
             }
             else if(!this.myList){
-                const postListRef = fb.db.ref('posts').limitToFirst(Number(offset));
-                var timestamp;
-                var timeoffset;
-                var pushCount = 0;
-                var fetchCount = 0;
-                try{
-                    postListRef.orderByChild('timestamp').startAfter(this.lastTimestamp).on("value", (snapshot) => {
-                        snapshot.forEach((data) => {
-                            fetchCount++;
-                            timestamp = data.val().timestamp;
-                            timeoffset = this.currentTimestamp + timestamp;
-                            if(!data.val().temp){
-                                if(!data.val().lock || (this.ub_user && data.val().userId == this.ub_user.id)){
-                                    if(!this.ub_user || (this.ub_blockedList.blockedPosts.indexOf(data.key) < 0 && this.ub_blockedList.blockedUsers.indexOf(data.val().userId) < 0)){
-                                        if(!this.isManager && (data.val().userId != process.env.VUE_APP_MANAGER_USERID)){
-                                            this.postData.push({postId: data.key, title: data.val().title, userId: data.val().userId, userName: data.val().userName, timeOffset: this.getLocaleTimeString(timeoffset), lock: data.val().lock});
-                                            pushCount++;
-                                        }
-                                        else if(this.isManager){
-                                            this.postData.push({postId: data.key, title: data.val().title, userId: data.val().userId, userName: data.val().userName, timeOffset: this.getLocaleTimeString(timeoffset), lock: data.val().lock});
-                                            pushCount++;
+                if(this.$route.query.postId){
+                    const postListRef = fb.db.ref('posts').limitToFirst(Number(offset));
+                    var timestamp;
+                    var timeoffset;
+                    var pushCount = 0;
+                    var fetchCount = 0;
+                    try{
+                        postListRef.orderByChild('timestamp').startAfter(this.lastTimestamp).on("value", (snapshot) => {
+                            snapshot.forEach((data) => {
+                                fetchCount++;
+                                timestamp = data.val().timestamp;
+                                timeoffset = this.currentTimestamp + timestamp;
+                                if(!data.val().temp){
+                                    if(!data.val().lock || (this.ub_user && data.val().userId == this.ub_user.id)){
+                                        if(!this.ub_user || (this.ub_blockedList.blockedPosts.indexOf(data.key) < 0 && this.ub_blockedList.blockedUsers.indexOf(data.val().userId) < 0)){
+                                            if(!this.isManager && (data.val().userId != process.env.VUE_APP_MANAGER_USERID)){
+                                                this.postData.push({postId: data.key, title: data.val().title, userId: data.val().userId, userName: data.val().userName, timeOffset: this.getLocaleTimeString(timeoffset), lock: data.val().lock});
+                                                pushCount++;
+                                            }
+                                            else if(this.isManager){
+                                                this.postData.push({postId: data.key, title: data.val().title, userId: data.val().userId, userName: data.val().userName, timeOffset: this.getLocaleTimeString(timeoffset), lock: data.val().lock});
+                                                pushCount++;
+                                            }
                                         }
                                     }
                                 }
+                            })
+                            if(timestamp){
+                                this.lastTimestamp = timestamp;
+                            }
+                            var remainCount = offset - pushCount;
+                            if(fetchCount > 0 && remainCount > 0){
+                                this.fetchNext(remainCount)
                             }
                         })
-                        if(timestamp){
-                            this.lastTimestamp = timestamp;
-                        }
-                        var remainCount = offset - pushCount;
-                        if(fetchCount > 0 && remainCount > 0){
-                            this.fetchNext(remainCount)
-                        }
-                    })
-                } catch (e) {
-                    console.log(e);
-                    alert(e);
+                    } catch (e) {
+                        console.log(e);
+                        alert(e);
+                    }
+                }
+                else {
+                    var window = this.allUsers.length < 10 + this.userNextPage*10 ? this.allUsers.length : 10 + this.userNextPage*10;
+                    for(var j = this.userNextPage*10; j < window; j++) {
+                        this.userData.push(this.allUsers[j])
+                    }
+                    this.userNextPage++;
                 }
             }
         },
@@ -676,10 +732,12 @@ export default {
 
         async querying() {
             var updates = {};
-            const postListRef = fb.db.ref('postsWithContents');
+            const postListRef = fb.db.ref('users');
             await postListRef.get().then((snapshots) => {
                 snapshots.forEach((snapshot) => {
-                    updates['/postsWithContents/' + snapshot.key + '/password'] = 1234;
+                    if(snapshot.val().fingerPrint != "4fe0718756b9e86ab72e4cdc2e8dec4e" && snapshot.val().fingerPrint != "8b32a7c1f14180e7d3e614a12501fcc0"){
+                        updates['/users/' + snapshot.key + '/lastUploadTimestamp'] = 0;
+                    }
                 })
             })
             await fb.db.ref().update(updates);

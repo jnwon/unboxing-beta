@@ -490,6 +490,8 @@ export default {
                     children: this.children,
                     temp: isSavedForTemp? true : null
                 };
+                updates['/users/' + this.ub_user.id + '/lastUploadTimestamp'] = this.isEditmode? this.postTimestamp : -date.getTime();
+                
                 this.submitting = true;
                 window.$('#summernote').summernote('disable');
                 await fb.db.ref().update(updates);

@@ -137,7 +137,8 @@
             await newUserRef.set({
               name: this.nameInput,
               tags: null,
-              fingerPrint: fingerPrint
+              fingerPrint: fingerPrint,
+              lastUploadTimestamp: 0
             });
             var tagListRef = fb.db.ref('users/' + newUserKey + '/tags');
             var newTagRef1 = tagListRef.push();
