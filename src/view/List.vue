@@ -272,7 +272,8 @@ export default {
         }
         else{
             if(this.$route.query.postId){
-                await this.fetchAll();
+                // await this.fetchAll();
+                await this.fetchUsers();
             }
             else{
                 await this.fetchUsers();
@@ -539,53 +540,54 @@ export default {
                 this.myNextIndex = i;
             }
             else if(!this.myList){
-                if(this.$route.query.postId){
-                    const postListRef = fb.db.ref('posts').limitToFirst(Number(offset));
-                    var timestamp;
-                    var timeoffset;
-                    var pushCount = 0;
-                    var fetchCount = 0;
-                    try{
-                        postListRef.orderByChild('timestamp').startAfter(this.lastTimestamp).on("value", (snapshot) => {
-                            snapshot.forEach((data) => {
-                                fetchCount++;
-                                timestamp = data.val().timestamp;
-                                timeoffset = this.currentTimestamp + timestamp;
-                                if(!data.val().temp){
-                                    if(!data.val().lock || (this.ub_user && data.val().userId == this.ub_user.id)){
-                                        if(!this.ub_user || (this.ub_blockedList.blockedPosts.indexOf(data.key) < 0 && this.ub_blockedList.blockedUsers.indexOf(data.val().userId) < 0)){
-                                            if(!this.isManager && (data.val().userId != process.env.VUE_APP_MANAGER_USERID)){
-                                                this.postData.push({postId: data.key, title: data.val().title, userId: data.val().userId, userName: data.val().userName, timeOffset: this.getLocaleTimeString(timeoffset), lock: data.val().lock});
-                                                pushCount++;
-                                            }
-                                            else if(this.isManager){
-                                                this.postData.push({postId: data.key, title: data.val().title, userId: data.val().userId, userName: data.val().userName, timeOffset: this.getLocaleTimeString(timeoffset), lock: data.val().lock});
-                                                pushCount++;
-                                            }
-                                        }
-                                    }
-                                }
-                            })
-                            if(timestamp){
-                                this.lastTimestamp = timestamp;
-                            }
-                            var remainCount = offset - pushCount;
-                            if(fetchCount > 0 && remainCount > 0){
-                                this.fetchNext(remainCount)
-                            }
-                        })
-                    } catch (e) {
-                        console.log(e);
-                        alert(e);
-                    }
-                }
-                else {
+                console.log(offset);
+                // if(this.$route.query.postId){
+                //     const postListRef = fb.db.ref('posts').limitToFirst(Number(offset));
+                //     var timestamp;
+                //     var timeoffset;
+                //     var pushCount = 0;
+                //     var fetchCount = 0;
+                //     try{
+                //         postListRef.orderByChild('timestamp').startAfter(this.lastTimestamp).on("value", (snapshot) => {
+                //             snapshot.forEach((data) => {
+                //                 fetchCount++;
+                //                 timestamp = data.val().timestamp;
+                //                 timeoffset = this.currentTimestamp + timestamp;
+                //                 if(!data.val().temp){
+                //                     if(!data.val().lock || (this.ub_user && data.val().userId == this.ub_user.id)){
+                //                         if(!this.ub_user || (this.ub_blockedList.blockedPosts.indexOf(data.key) < 0 && this.ub_blockedList.blockedUsers.indexOf(data.val().userId) < 0)){
+                //                             if(!this.isManager && (data.val().userId != process.env.VUE_APP_MANAGER_USERID)){
+                //                                 this.postData.push({postId: data.key, title: data.val().title, userId: data.val().userId, userName: data.val().userName, timeOffset: this.getLocaleTimeString(timeoffset), lock: data.val().lock});
+                //                                 pushCount++;
+                //                             }
+                //                             else if(this.isManager){
+                //                                 this.postData.push({postId: data.key, title: data.val().title, userId: data.val().userId, userName: data.val().userName, timeOffset: this.getLocaleTimeString(timeoffset), lock: data.val().lock});
+                //                                 pushCount++;
+                //                             }
+                //                         }
+                //                     }
+                //                 }
+                //             })
+                //             if(timestamp){
+                //                 this.lastTimestamp = timestamp;
+                //             }
+                //             var remainCount = offset - pushCount;
+                //             if(fetchCount > 0 && remainCount > 0){
+                //                 this.fetchNext(remainCount)
+                //             }
+                //         })
+                //     } catch (e) {
+                //         console.log(e);
+                //         alert(e);
+                //     }
+                // }
+                // else {
                     var window = this.allUsers.length < 10 + this.userNextPage*10 ? this.allUsers.length : 10 + this.userNextPage*10;
                     for(var j = this.userNextPage*10; j < window; j++) {
                         this.userData.push(this.allUsers[j])
                     }
                     this.userNextPage++;
-                }
+                // }
             }
         },
         async fetchMy(){
