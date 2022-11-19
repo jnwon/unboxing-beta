@@ -83,7 +83,14 @@
           var checkEmergency = this.ub_user.checkEmergency;
           var privacyPolicyAgree = this.ub_user.privacyPolicyAgree;
           await fb.db.ref('users/' + userId).get().then((snapshot) => {
-            console.log(snapshot.val().name);
+            if(!snapshot.val()){
+              this.setUserInfo(null);
+              this.setTags(null);
+              this.setFingerPrint('');
+              localStorage.removeItem('vuex');
+              location.reload();
+            }
+
             this.setUserInfo({id: userId, name: snapshot.val().name, email: snapshot.val().email, lastTimestampOfNoti: snapshot.val().lastTimestampOfNoti, tutorial: tutorial, noAnnouncement: noAnnouncement, checkEmergency: checkEmergency, privacyPolicyAgree: privacyPolicyAgree})
             
             var blockedPosts = [];
