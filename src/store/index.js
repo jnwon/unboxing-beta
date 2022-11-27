@@ -9,6 +9,10 @@ export default createStore({
             blockedPosts : [],
             blockedUsers : []
         },
+        ub_followList : {
+            followingList : [],
+            followerList : []
+        },
         ub_tags: null,
         ub_fingerPrint: '',
         ub_lastCheckedPopup: '' 
@@ -64,6 +68,15 @@ export default createStore({
         },
         setBlockedUser(state, userId) {
             state.ub_blockedList.blockedUsers.push(userId);
+        },
+        setFollowingList(state, userlist) {
+            state.ub_followList.followingList = userlist;
+        },
+        setFollwingUser(state, userId) {
+            state.ub_followList.followingList.push(userId);
+        },
+        setFollowerList(state, userlist) {
+            state.ub_followList.followerList = userlist;
         }
     },
     plugins: [

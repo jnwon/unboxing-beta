@@ -1,5 +1,5 @@
 {
-    "info-version" : "1.11",
+    "info-version" : "1.110",
     "info-version-label" : "Unboxing Version : ",
     "info-contact" : "To Developer : ",
     "info-tou" : "Terms Of Use",
@@ -83,6 +83,8 @@
     "alert-unknown" : "Unidentified account.",
     "alert-forbiden" : "Only the owner of this post can modify.",
     "alert-locked" : "A locked post by its owner.",
+    "alert-only-mutual-followers" : "Opened only to mutual followers.",
+    "alert-only-followers" : "Opened only to followers.",
     "alert-tagname" : "Fill the tag name in!",
     "alert-editbox" : "Modifying BOX itself is unavailable now.\nPlease edit this by modifying the parent post of this BOX.",
     "alert-setting-authnumber" : "An authentication number was sent to the E-mail you had entered.\nPlease fill the number in.",

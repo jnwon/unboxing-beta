@@ -21,7 +21,8 @@
                 <i :class="submitting ? 'fa fa-spinner fa-spin' : 'fa fa-upload'" @click="submitPost(this.loadedTempPostId, false)" style="margin-left: 20%;" v-popover:top="$t('tooltip-tutorial-2-2')"/>
                 <i v-if="isManager" class="fas fa-flag" :style="'float: right;' + (popup? 'color: green' : '')" @click="toggleAnnouncementPopup()"/>
                 <i v-if="isManager" class="fas fa-bullhorn" :style="'float: right; margin-right: 15px; ' + (announcement? 'color: green' : '')" @click="toggleAnnouncement()"/>
-                <i v-else :class="lock? 'fa fa-lock' : 'fa fa-unlock'" :style="'float: right; ' + (lock? 'color: green' : '')" @click="toggleLock()"/>
+                <!-- <i v-else :class="lock? 'fa fa-lock' : 'fa fa-unlock'" :style="'float: right; ' + (lock? 'color: green' : '')" @click="toggleLock()"/> -->
+                <i v-else :class="constMark[constraint]" style="float: right;" @click="changeConstraintLevel()"/>
             </div>
         </div>
         <div class="col-sm-1"></div>
@@ -97,6 +98,13 @@ export default {
             tags : [],
             postTags : [],
             lock : false,
+            constraint : 0,
+            constMark : [
+                'fas fa-globe-americas',
+                'fas fa-user-plus',
+                'fas fa-user-friends',
+                'fa fa-lock'
+            ],
             postTitle : '',
             postTimestamp : 0,
             children : {},
@@ -270,6 +278,15 @@ export default {
         toggleLock() {
             this.lock = !this.lock;
         },
+        changeConstraintLevel() {
+            this.constraint = (this.constraint +1) % 4;
+            if(this.constraint == 3) {
+                this.lock = true;
+            }
+            else {
+                this.lock = false;
+            }
+        },
         toggleAnnouncement() {
             this.announcement = !this.announcement;
         },
@@ -321,6 +338,7 @@ export default {
                 window.$("#tempPosts").modal('hide');
                 await postRef.get().then((snapshot) => {
                     this.lock = snapshot.val().lock;
+                    this.constraint = snapshot.val().constraint? snapshot.val().constraint : (this.lock? 3 : 0);
                     this.announcement = snapshot.val().announcement;
                     title = snapshot.val().title;
                     contents = snapshot.val().contents;
@@ -344,7 +362,11 @@ export default {
                     this.postTitle = title;
                     if(this.postTags.length > 0) {
                         this.postTags.forEach((tag) => {
-                            this.tags[tag.id] = true;
+                            this.ub_tags.forEach((t) => {
+                                if(t.id == tag.id) {
+                                    this.tags[tag.id] = true;
+                                }
+                            })
                         })
                     }
                     window.$('#summernote').summernote('pasteHTML', contents);
@@ -378,6 +400,7 @@ export default {
 
             var date = new Date();
             var boxLock = this.lock;
+            var boxConstraint = this.constraint;
             var announcement = this.announcement;
             var children = this.children;
             var boxUserInfo = this.ub_user;
@@ -415,6 +438,7 @@ export default {
                 var contents = window.$(element).html();
                 var timestamp = isNewBox? -date.getTime() : Number(window.$(element).attr("timestamp"));
                 var lock = boxLock;
+                var constraint = boxConstraint;
                 var userId = boxUserInfo.id;
                 var userName = boxUserInfo.name;
                 var fingerPrint = boxFingerPrint;
@@ -425,6 +449,7 @@ export default {
                     contents: contents,
                     timestamp: timestamp,
                     lock: lock,
+                    constraint: constraint,
                     announcement: announcement,
                     userId: userId,
                     userName: userName,
@@ -436,6 +461,7 @@ export default {
                     title: title,
                     timestamp: timestamp,
                     lock: lock,
+                    constraint: constraint,
                     announcement: announcement,
                     userId: userId,
                     userName: userName,
@@ -472,6 +498,7 @@ export default {
                     contents: contents,
                     timestamp: this.isEditmode? this.postTimestamp : -date.getTime(),
                     lock: this.lock,
+                    constraint: this.constraint,
                     announcement: this.announcement,
                     userId: this.ub_user.id,
                     userName: this.ub_user.name,
@@ -483,6 +510,7 @@ export default {
                     title: title,
                     timestamp: this.isEditmode? this.postTimestamp : -date.getTime(),
                     lock: this.lock,
+                    constraint: this.constraint,
                     announcement: this.announcement,
                     userId: this.ub_user.id,
                     userName: this.ub_user.name,

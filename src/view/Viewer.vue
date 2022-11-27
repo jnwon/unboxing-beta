@@ -5,7 +5,11 @@
                 <div class="row" style="height: auto; min-height: 85%;">
                     <div style="display: flex">
                         <h3 v-if="postTitle == ''"><i class="fa fa-spinner fa-spin"/></h3>
-                        <h3 id="post-title" style="text-align: left; margin-right: 5px">{{postTitle}}&nbsp;<span v-if="lock" style="color: green; font-size: medium;"><i class="fa fa-lock" style="position: relative; bottom: 2px"/></span></h3>
+                        <h3 id="post-title" style="text-align: left; margin-right: 5px">{{postTitle}}&nbsp;
+                            <span v-if="lock" style="color: green; font-size: medium;"><i class="fa fa-lock" style="position: relative; bottom: 2px"/></span>
+                            <span v-else-if="ub_user && ub_user.id == postUserIdFull && constraint == 2" style="color: #337ab7; font-size: medium;"><i class="fas fa-user-friends" style="position: relative; bottom: 2px"/></span>
+                            <span v-else-if="ub_user && ub_user.id == postUserIdFull && constraint == 1" style="color: orange; font-size: medium;"><i class="fas fa-user-plus" style="position: relative; bottom: 2px"/></span>
+                        </h3>
                         <a href="#" class="dropdown" v-if="!this.ub_user || this.ub_user.id != postUserIdFull"><h3 style="font-size:medium; padding-top: 3px" class="dropdown-toggle" data-toggle="dropdown"><i class="fas fa-ban"></i></h3>
                             <ul class="dropdown-menu dropdown-menu-right" style="text-align:center">
                                 <li @click="reportPost()"><span> {{ $t('post-report') }} </span></li>
@@ -15,8 +19,13 @@
                         </a>
                     </div>
                     <div style="display: flex; justify-content: space-between;">
-                        <span style="font-size:small; color:grey;">{{postDateTime}}<a :href="postUrl+'#disqus_thread'" style="margin-left: 5px"><i class="fas fa-comment-dots"></i></a></span>
-                        <span style="font-size:small; color:grey">{{postUserName}}({{postUserId}})&nbsp;
+                        <span style="font-size:small; color:grey;">{{postDateTime}}<a href="#disqus_thread" style="margin-left: 5px"><i class="fas fa-comment-dots"></i></a></span>
+                        <span style="font-size:small; color:grey">
+                            <a href="javascript:void(0)" v-if="this.ub_user && this.ub_user.id != postUserIdFull && !following && !follower" style="color: lightgray; margin-right: 5px" @click="followUser()"><i class="fas fa-user-plus"></i></a>
+                            <a href="javascript:void(0)" v-else-if="this.ub_user && this.ub_user.id != postUserIdFull && following && !follower" style="color: #337ab7; margin-right: 5px" @click="unfollowUser()"><i class="fas fa-user-plus"></i></a>
+                            <a href="javascript:void(0)" v-else-if="this.ub_user && this.ub_user.id != postUserIdFull && !following && follower" style="color: orange; margin-right: 5px" @click="followUser()"><i class="fas fa-user-plus"></i></a>
+                            <a href="javascript:void(0)" v-else-if="this.ub_user && this.ub_user.id != postUserIdFull && following && follower" style="color: green; margin-right: 5px" @click="unfollowUser()"><i class="fas fa-user-friends"></i></a>
+                            {{postUserName}}({{postUserId}})&nbsp;
                             <a :href="'/'+postUserIdFull" style="margin-right: 8px"><i class="fa fa-home"></i></a>
                             <a href="#" class="dropdown" v-if="!this.ub_user || this.ub_user.id != postUserIdFull"><i class="fas fa-ban dropdown-toggle" data-toggle="dropdown"></i>
                                 <ul class="dropdown-menu dropdown-menu-right" style="text-align:center">
@@ -105,10 +114,13 @@ export default {
     data() {
         return {
             isManager: false,
+            following: false,
+            follower: false,
             announcement: false,
             popup : false,
             popupCurrent : '',
             lock: false,
+            constraint: 0,
             postTitle: '',
             postContents: '',
             postDateTime: '',
@@ -180,6 +192,7 @@ export default {
         try{
             await postRef.get().then((snapshot) => {
                 this.lock = snapshot.val().lock;
+                this.constraint = snapshot.val().constraint;
                 this.announcement = snapshot.val().announcement;
                 title = snapshot.val().title;
                 contents = snapshot.val().contents;
@@ -193,11 +206,31 @@ export default {
                 this.parent = snapshot.val().parent;
                 this.children = snapshot.val().children;
             })
-            if(this.lock && this.postFingerPrint != this.ub_fingerPrint){
-                alert(this.$t('alert-locked'));
-                this.moveToList();
+
+            var pass = true;
+            if(this.constraint == 3) {
+                if(this.postFingerPrint != this.ub_fingerPrint){
+                    pass = false;
+                    alert(this.$t('alert-locked'));
+                    this.moveToList();
+                }
             }
-            else{
+            else if(this.constraint == 2) {
+                if(this.postFingerPrint != this.ub_fingerPrint && !(this.ub_followList.followingList.indexOf(userIdFull) >= 0 && this.ub_followList.followerList.indexOf(userIdFull) >= 0)) {
+                    pass = false;
+                    alert(this.$t('alert-only-mutual-followers'));
+                    this.moveToList();
+                }
+            }
+            else if(this.constraint == 1) {
+                if(this.postFingerPrint != this.ub_fingerPrint && !(this.ub_followList.followingList.indexOf(userIdFull) >= 0)) {
+                    pass = false;
+                    alert(this.$t('alert-only-followers'));
+                    this.moveToList();
+                }
+            }
+            
+            if (pass) {
                 if(isMobile()){
                     contents = contents.replace(/width: 50%/g, "width: 100%");
                     contents = contents.replace(/width: 25%/g, "width: 50%");
@@ -226,6 +259,14 @@ export default {
                             }
                         })
                     })
+                }
+
+                if(this.ub_followList.followingList.indexOf(this.postUserIdFull) >= 0) {
+                    this.following = true;
+                }
+
+                if(this.ub_followList.followerList.indexOf(this.postUserIdFull) >= 0) {
+                    this.follower = true;
                 }
                 
                 fb.db.ref('posts/' + this.parent + '/title').get().then((snapshot) => {
@@ -309,10 +350,10 @@ export default {
         }
     },
     computed: {
-        ...mapState(['ub_fingerPrint', 'ub_user', 'ub_tags', 'ub_blockedList'])
+        ...mapState(['ub_fingerPrint', 'ub_user', 'ub_tags', 'ub_blockedList', 'ub_followList'])
     },
     methods: {
-        ...mapMutations(['setTutorialStep', 'setBlockedPost', 'setBlockedUser']),
+        ...mapMutations(['setTutorialStep', 'setBlockedPost', 'setBlockedUser', 'setFollowingList', 'setFollwingUser']),
         moveToList() {
             var ownerId = sessionStorage.getItem('currentUnboxingOwnerId');
             if(this.ub_user && this.ub_user.tutorial == 3){
@@ -475,6 +516,21 @@ export default {
             else {
                 alert(this.$t('report-alert'));
             }
+        },
+        followUser() {
+            this.setFollwingUser(this.postUserIdFull);
+            fb.db.ref('users/' + this.ub_user.id + '/followingList/' + this.postUserIdFull).set(true);
+            fb.db.ref('users/' + this.postUserIdFull + '/followerList/' + this.ub_user.id).set(true);
+            this.following = true;
+        },
+        unfollowUser() {
+            var filtered = this.ub_followList.followingList.filter((data) => {
+                return data != this.postUserIdFull;
+            });
+            this.setFollowingList(filtered);
+            fb.db.ref('users/' + this.ub_user.id + '/followingList/' + this.postUserIdFull).set(null);
+            fb.db.ref('users/' + this.postUserIdFull + '/followerList/' + this.ub_user.id).set(null);
+            this.following = false;
         }
     }
 }

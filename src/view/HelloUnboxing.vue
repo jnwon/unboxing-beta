@@ -63,7 +63,7 @@
       }
     },
     computed: {
-      ...mapState(['ub_user', 'ub_tags', 'ub_fingerPrint', 'ub_blockedList'])
+      ...mapState(['ub_user', 'ub_tags', 'ub_fingerPrint'])
     },
     created() {
       if(navigator.language != 'ko' && navigator.language != 'ko-KR'){
@@ -108,6 +108,22 @@
               })
               this.setBlockedUsers(blockedUsers);
             });
+
+            var followingList = [];
+            fb.db.ref('users/' + userId + '/followingList').get().then((snapshot) => {
+              snapshot.forEach((data) => {
+                followingList.push(data.key);
+              })
+              this.setFollowingList(followingList);
+            });
+
+            var followerList = [];
+            fb.db.ref('users/' + userId + '/followerList').get().then((snapshot) => {
+              snapshot.forEach((data) => {
+                followerList.push(data.key);
+              })
+              this.setFollowerList(followerList);
+            });
           })
           var tags = [];
           await fb.db.ref('users/' + userId + '/tags').get().then((snapshot) => {
@@ -124,7 +140,7 @@
       }
     },
     methods: {
-      ...mapMutations(['setUserInfo', 'setTags', 'setFingerPrint', 'setBlockedPosts', 'setBlockedUsers']),
+      ...mapMutations(['setUserInfo', 'setTags', 'setFingerPrint', 'setBlockedPosts', 'setBlockedUsers', 'setFollowingList', 'setFollowerList']),
       async createAccount() {
         if(!this.nameInput){
           window.$('#nameInput').focus();
@@ -226,6 +242,18 @@
                   tags.push({id: key, name: userInfoObj.tags[key].name})
                 }
                 this.setTags(tags);
+
+                var followingList = [];
+                for (var rey in userInfoObj.followingList) {
+                  followingList.push(rey);
+                }
+                this.setFollowingList(followingList);
+
+                var followerList = [];
+                for (var mey in userInfoObj.followerList) {
+                  followerList.push(mey);
+                }
+                this.setFollowerList(followerList);
 
                 this.nameInput = userInfoObj.name;
                 window.$('#step1').animate({opacity: 0}, 'slow', function() {window.$('#step1').hide()})

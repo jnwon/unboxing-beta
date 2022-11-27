@@ -15,7 +15,9 @@
                 <div class="list-group" v-if="!$route.params.userId && (!this.ub_user || !this.ub_user.noAnnouncement)">
                     <a v-for="(post, index) in announceData" :key="index" @click="moveToViewer(post.postId, post.userId)" :id="post.postId" href="#" class="list-group-item" style="display: flex; justify-content: space-between;">
                         <div class="announceTitle" :style="'text-align: left; ' + (post.postId == '-NELJ6iKT-aFCiDYIQIQ' ? 'color: coral' : '')">
-                            <span>{{post.title}}&nbsp;<i v-if="post.lock" class="fa fa-lock" style="color: green; font-size: smaller;"/></span>
+                            <span>{{post.title}}&nbsp;
+                                <i v-if="post.lock" class="fa fa-lock" style="color: green; font-size: smaller;"/>
+                            </span>
                         </div>
                         <div class="announceMeta">
                             <span :style="'font-size:small; color:' + (this.ub_user && post.userId == this.ub_user.id? 'coral' : 'lightgrey')">{{post.userName}}</span><span style="font-size:small; color:lightgrey"> | {{post.timeOffset}}</span>
@@ -25,7 +27,11 @@
                 <div v-if="myList" class="list-group" v-popover:bottom="$t('tooltip-tutorial-4-3')">
                     <a v-for="(post, index) in postData" :key="index" @click="moveToViewer(post.postId, post.userId)" :id="post.postId" href="#" class="list-group-item" style="display: flex; justify-content: space-between;">
                         <div class="postTitle" style="text-align: left;">
-                            <span>{{post.title}}&nbsp;<i v-if="post.lock" class="fa fa-lock" style="color: green; font-size: smaller;"/></span>
+                            <span>{{post.title}}&nbsp;
+                                <i v-if="post.lock" class="fa fa-lock" style="color: green; font-size: smaller;"/>
+                                <i v-else-if="ub_user && ub_user.id == post.userId && post.constraint == 2" class="fas fa-user-friends" style="color: #337ab7; font-size: smaller;"/>
+                                <i v-else-if="ub_user && ub_user.id == post.userId && post.constraint == 1" class="fas fa-user-plus" style="color: orange; font-size: smaller;"/>
+                            </span> 
                         </div>
                         <div class="postMeta">
                             <span :style="'font-size:small; color:' + (this.ub_user && post.userId == this.ub_user.id? 'coral' : 'lightgrey')">{{post.userName}}</span><span style="font-size:small; color:lightgrey"> | {{post.timeOffset}}</span>
@@ -38,7 +44,7 @@
                             <span> {{ user.name + $t('unboxing-name') + ' Unboxing' }} </span>
                         </div>
                         <div class="postMeta">
-                            <span :style="'font-size:small; color:' + (this.ub_user && user.id == this.ub_user.id? 'coral' : 'lightgrey')">{{user.name + '(' + user.id.slice(user.id.length-4) + ')'}}</span><span style="font-size:small; color:lightgrey"> | {{user.timeOffset}}</span>
+                            <span style="margin-right: 5px; font-size: smaller;" v-html="user.followMark"></span><span :style="'font-size:small; color:' + (this.ub_user && user.id == this.ub_user.id? 'coral' : 'lightgrey')">{{user.name + '(' + user.id.slice(user.id.length-4) + ')'}}</span><span style="font-size:small; color:lightgrey"> | {{user.timeOffset}}</span>
                         </div>
                     </a>
                 </div>
@@ -348,7 +354,7 @@ export default {
         }
     },
     computed: {
-        ...mapState(['ub_user', 'ub_tags', 'ub_fingerPrint', 'ub_lastCheckedPopup', 'ub_blockedList'])
+        ...mapState(['ub_user', 'ub_tags', 'ub_fingerPrint', 'ub_lastCheckedPopup', 'ub_blockedList', 'ub_followList'])
     },
     methods: {
         ...mapMutations(['setUserInfo', 'setTags', 'setFingerPrint', 'setTutorialStep', 'setUserName', 'setEmail', 'setNoAnnouncement', 'setCheckPopup', 'setPrivacyPolicyAgree']),
@@ -458,7 +464,8 @@ export default {
                 })
 
                 this.editTag = false;
-                this.fetchMy();
+                // this.fetchMy();
+                this.reload();
             }
         },
         cancelEditTags(){
@@ -474,7 +481,23 @@ export default {
                 await fb.db.ref('users').orderByChild('lastUploadTimestamp').once("value", (snapshot) => {
                     snapshot.forEach((data) => {
                         if(!this.ub_user || this.ub_blockedList.blockedUsers.indexOf(data.key) < 0){
-                            this.allUsers.push({id: data.key, name: data.val().name, timeOffset : data.val().lastUploadTimestamp? this.getLocaleTimeString(data.val().lastUploadTimestamp + this.currentTimestamp) : null});
+                            var followMark = '';
+                            if(this.ub_user) {
+                                if(this.ub_followList.followingList.indexOf(data.key) >= 0) {
+                                    if(this.ub_followList.followerList.indexOf(data.key) >= 0) {
+                                        followMark = '<i style="color: green;" class="fas fa-user-friends"></i>';
+                                    }
+                                    else {
+                                        followMark = '<i style="color: #337ab7;" class="fas fa-user-plus"></i>';
+                                    }
+                                }
+                                else {
+                                    if(this.ub_followList.followerList.indexOf(data.key) >= 0) {
+                                        followMark = '<i style="color: orange;" class="fas fa-user-plus"></i>';
+                                    }
+                                }
+                            }
+                            this.allUsers.push({id: data.key, name: data.val().name, followMark: followMark, timeOffset : data.val().lastUploadTimestamp? this.getLocaleTimeString(data.val().lastUploadTimestamp + this.currentTimestamp) : null});
                         }
                     })
                     var window = this.allUsers.length < 10 ? this.allUsers.length : 10;
@@ -615,14 +638,50 @@ export default {
                                     })
                                 }
                                 if(tagMatched){
-                                    if(!data.val().lock || (this.ub_user && data.val().userId == this.ub_user.id)){
-                                        this.MyData.push({postId: data.key, title: data.val().title, userId: data.val().userId, userName: data.val().userName, timeOffset: this.getLocaleTimeString(timeoffset), lock: data.val().lock});
+                                    if(!this.constraint) {  // no constraint
+                                        this.MyData.push({postId: data.key, title: data.val().title, userId: data.val().userId, userName: data.val().userName, timeOffset: this.getLocaleTimeString(timeoffset), lock: data.val().lock, constraint: data.val().constraint});
+                                    }
+                                    else if(this.constraint && this.ub_user) {  // constrainted, but member
+                                        if(data.val().userId == this.ub_user.id) {  // owner of this post
+                                            this.MyData.push({postId: data.key, title: data.val().title, userId: data.val().userId, userName: data.val().userName, timeOffset: this.getLocaleTimeString(timeoffset), lock: data.val().lock, constraint: data.val().constraint});
+                                        }
+                                        else {  // it's not my post
+                                            if(this.constraint == 1) {  // opened to followers
+                                                if(this.ub_followList.followingList.indexOf(data.val().userId) >= 0) {
+                                                    this.MyData.push({postId: data.key, title: data.val().title, userId: data.val().userId, userName: data.val().userName, timeOffset: this.getLocaleTimeString(timeoffset), lock: data.val().lock, constraint: data.val().constraint});
+                                                }
+                                            }
+                                            else if(this.constraint == 2) {  // opend to mutual followers
+                                                if(this.ub_followList.followingList.indexOf(data.val().userId) >= 0 && this.ub_followList.followerList.indexOf(data.val().userId) >= 0) {
+                                                    this.MyData.push({postId: data.key, title: data.val().title, userId: data.val().userId, userName: data.val().userName, timeOffset: this.getLocaleTimeString(timeoffset), lock: data.val().lock, constraint: data.val().constraint});
+                                                }
+                                            }
+                                        }
                                     }
                                 }
                             }
                             else{
-                                if(!data.val().lock || (this.ub_user && data.val().userId == this.ub_user.id)){
-                                    this.MyData.push({postId: data.key, title: data.val().title, userId: data.val().userId, userName: data.val().userName, timeOffset: this.getLocaleTimeString(timeoffset), lock: data.val().lock});
+                                if(data.val().constraint == 0) {  // no constraint
+                                    this.MyData.push({postId: data.key, title: data.val().title, userId: data.val().userId, userName: data.val().userName, timeOffset: this.getLocaleTimeString(timeoffset), lock: data.val().lock, constraint: data.val().constraint});
+                                }
+                                else {
+                                    if(this.ub_user) {  // constrainted, but member
+                                        if(data.val().userId == this.ub_user.id) {  // owner of this post
+                                            this.MyData.push({postId: data.key, title: data.val().title, userId: data.val().userId, userName: data.val().userName, timeOffset: this.getLocaleTimeString(timeoffset), lock: data.val().lock, constraint: data.val().constraint});
+                                        }
+                                        else {  // it's not my post
+                                            if(data.val().constraint == 1) {  // opened to followers
+                                                if(this.ub_followList.followingList.indexOf(data.val().userId) >= 0) {
+                                                    this.MyData.push({postId: data.key, title: data.val().title, userId: data.val().userId, userName: data.val().userName, timeOffset: this.getLocaleTimeString(timeoffset), lock: data.val().lock, constraint: data.val().constraint});
+                                                }
+                                            }
+                                            else if(data.val().constraint == 2) {  // opend to mutual followers
+                                                if(this.ub_followList.followingList.indexOf(data.val().userId) >= 0 && this.ub_followList.followerList.indexOf(data.val().userId) >= 0) {
+                                                    this.MyData.push({postId: data.key, title: data.val().title, userId: data.val().userId, userName: data.val().userName, timeOffset: this.getLocaleTimeString(timeoffset), lock: data.val().lock, constraint: data.val().constraint});
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -734,11 +793,26 @@ export default {
 
         async querying() {
             var updates = {};
-            const postListRef = fb.db.ref('users');
+            // const postListRef = fb.db.ref('users');
+            // await postListRef.get().then((snapshots) => {
+            //     snapshots.forEach((snapshot) => {
+            //         if(snapshot.val().fingerPrint != "4fe0718756b9e86ab72e4cdc2e8dec4e" && snapshot.val().fingerPrint != "8b32a7c1f14180e7d3e614a12501fcc0"){
+            //             updates['/users/' + snapshot.key + '/lastUploadTimestamp'] = 0;
+            //         }
+            //     })
+            // })
+            const postListRef = fb.db.ref('posts');
             await postListRef.get().then((snapshots) => {
                 snapshots.forEach((snapshot) => {
-                    if(snapshot.val().fingerPrint != "4fe0718756b9e86ab72e4cdc2e8dec4e" && snapshot.val().fingerPrint != "8b32a7c1f14180e7d3e614a12501fcc0"){
-                        updates['/users/' + snapshot.key + '/lastUploadTimestamp'] = 0;
+                    if(snapshot.val().userId != "-NGZRZm9_a2SiIvoKVjb"){ 
+                        if(snapshot.val().lock){
+                            updates['/posts/' + snapshot.key + '/constraint'] = 3;
+                            updates['/postsWithContents/' + snapshot.key + '/constraint'] = 3;
+                        }
+                        else {
+                            updates['/posts/' + snapshot.key + '/constraint'] = 0;
+                            updates['/postsWithContents/' + snapshot.key + '/constraint'] = 0;
+                        }
                     }
                 })
             })

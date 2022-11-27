@@ -1,5 +1,5 @@
 {
-    "info-version" : "1.11",
+    "info-version" : "1.110",
     "info-version-label" : "Unboxing 버전 : ",
     "info-contact" : "개발자 연락처 : ",
     "info-tou" : "이용약관",
@@ -84,6 +84,8 @@
     "alert-unknown" : "존재하지 않는 계정정보입니다.",
     "alert-forbiden" : "포스트 작성자만 수정할 수 있습니다.",
     "alert-locked" : "비밀글입니다.",
+    "alert-only-mutual-followers" : "서로 팔로우한 유저에게만 공개된 글입니다.",
+    "alert-only-followers" : "팔로우한 유저에게만 공개된 글입니다.",
     "alert-tagname" : "태그 이름을 입력해주세요!",
     "alert-editbox" : "박스 글의 개별 수정은 현재 불가능합니다.\n부모 포스트의 수정을 통해 박스 내용을 수정해주세요.",
     "alert-setting-authnumber" : "입력하신 이메일로 인증번호가 전송되었습니다.\n인증번호를 입력해주세요.",
