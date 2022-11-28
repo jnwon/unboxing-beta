@@ -211,6 +211,16 @@ export default {
                             this.ubTags.push({id: data.key, name: data.val().name});
                             })
                         });
+
+                        if(this.ub_user){
+                            var followerList = [];
+                                await fb.db.ref('users/' + this.ub_user.id + '/followerList').get().then((snapshot) => {
+                                snapshot.forEach((data) => {
+                                    followerList.push(data.key);
+                                })
+                                this.setFollowerList(followerList);
+                            });
+                        }
                     }
                 })
             } catch(e) {
@@ -357,7 +367,7 @@ export default {
         ...mapState(['ub_user', 'ub_tags', 'ub_fingerPrint', 'ub_lastCheckedPopup', 'ub_blockedList', 'ub_followList'])
     },
     methods: {
-        ...mapMutations(['setUserInfo', 'setTags', 'setFingerPrint', 'setTutorialStep', 'setUserName', 'setEmail', 'setNoAnnouncement', 'setCheckPopup', 'setPrivacyPolicyAgree']),
+        ...mapMutations(['setUserInfo', 'setTags', 'setFingerPrint', 'setTutorialStep', 'setUserName', 'setEmail', 'setNoAnnouncement', 'setCheckPopup', 'setPrivacyPolicyAgree', 'setFollowerList']),
         reload() {
             location.reload();
         },

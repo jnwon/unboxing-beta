@@ -522,6 +522,49 @@ export default {
             fb.db.ref('users/' + this.ub_user.id + '/followingList/' + this.postUserIdFull).set(true);
             fb.db.ref('users/' + this.postUserIdFull + '/followerList/' + this.ub_user.id).set(true);
             this.following = true;
+
+            fb.db.ref('fcmServerKey').get().then((snapshot) => {
+              if(snapshot.exists()) {
+                const fcmServerkey = snapshot.val();
+                var notiListRef = fb.db.ref('notifications/' + this.postUserIdFull);
+                var newNotiRef = notiListRef.push();
+                var date = new Date();
+                try {
+                  newNotiRef.set({
+                    timestamp: -date.getTime(),
+                    followerId: this.ub_user.id,
+                    followerName: this.ub_user.name,
+                    ownerId: this.postUserIdFull,
+                    read: false
+                  });
+
+                  fb.db.ref('users/' + this.postUserIdFull + '/fcmToken').get().then((snapshot) => {
+                    if(snapshot.exists()){
+                      const fcmTo = snapshot.val();
+                      fetch('https://fcm.googleapis.com/fcm/send', {
+                        method: 'POST',
+                        headers: {
+                          Authorization: 'key=' + fcmServerkey,
+                          "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                          to: fcmTo,
+                          notification: {
+                            title: this.ub_user.name + this.$t('noti-followed'),
+                            body: this.ub_user.name + this.$t('noti-followers-unboxing'),
+                            icon: './img/icons/apple-touch-icon.png',
+                            click_action: "/" + this.ub_user.id
+                          }
+                        })
+                      })
+                    }
+                  })
+                } catch(e) {
+                  console.log(e);
+                  alert(e);
+                }
+              }
+            })
         },
         unfollowUser() {
             var filtered = this.ub_followList.followingList.filter((data) => {

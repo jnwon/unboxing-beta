@@ -1,5 +1,5 @@
 {
-    "info-version" : "1.110",
+    "info-version" : "1.111",
     "info-version-label" : "Unboxing 버전 : ",
     "info-contact" : "개발자 연락처 : ",
     "info-tou" : "이용약관",
@@ -80,7 +80,8 @@
     "default-boxtitle-tail" : "에 저장된 박스입니다.",
     "default-posttitle-tail" : "에 저장된 글입니다.",
 
-    
+    "noti-followed" : "님이 나를 팔로우합니다.",
+    "noti-followers-unboxing" : "님의 Unboxing 방문",
     "alert-unknown" : "존재하지 않는 계정정보입니다.",
     "alert-forbiden" : "포스트 작성자만 수정할 수 있습니다.",
     "alert-locked" : "비밀글입니다.",

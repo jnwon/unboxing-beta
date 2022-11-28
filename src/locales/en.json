@@ -1,5 +1,5 @@
 {
-    "info-version" : "1.110",
+    "info-version" : "1.111",
     "info-version-label" : "Unboxing Version : ",
     "info-contact" : "To Developer : ",
     "info-tou" : "Terms Of Use",
@@ -80,6 +80,8 @@
     "default-boxtitle-tail" : " (BOX created time)",
     "default-posttitle-tail" : " (post created time)",
 
+    "noti-followers-unboxing" : "'s Unboxing link'",
+    "noti-followed" : " follows me.",
     "alert-unknown" : "Unidentified account.",
     "alert-forbiden" : "Only the owner of this post can modify.",
     "alert-locked" : "A locked post by its owner.",
