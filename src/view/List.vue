@@ -468,14 +468,15 @@ export default {
                         tag.id = tagRef.key;
                     }
                     this.setTags(this.tagsEditing);
+                    this.ubTags = this.tagsEditing;
                 })
                 this.tagsRemoved.forEach(async (id) => {
                     await fb.db.ref('users/' + this.ub_user.id + '/tags/' + id).set(null);
                 })
 
                 this.editTag = false;
-                // this.fetchMy();
-                this.reload();
+                this.fetchMy();
+                // this.reload();
             }
         },
         cancelEditTags(){
