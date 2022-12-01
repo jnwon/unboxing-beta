@@ -53,6 +53,10 @@
                     <div style="text-align: justify; padding: 10px">
                         <span style="color:lightgrey; margin-right: 20px"><i class="fa fa-star" v-tooltip="$t('tooltip-developing')"/></span>
                         <span v-if="this.ub_user && !$route.params.userId" style="margin-right: 20px" @click="toggleListMode()" id="myBtn" v-popover:top="$t('tooltip-tutorial-4-1')"><b>{{myList? 'ALL' : 'MY'}}</b></span>
+                        <a href="javascript:void(0)" v-if="this.ub_user && $route.params.userId && this.ub_user.id != $route.params.userId && !following && !follower" style="color: lightgray; margin-right: 20px" @click="followUser()"><i class="fas fa-user-plus"></i></a>
+                        <a href="javascript:void(0)" v-else-if="this.ub_user && $route.params.userId && this.ub_user.id != $route.params.userId && following && !follower" style="color: #337ab7; margin-right: 20px" @click="unfollowUser()"><i class="fas fa-user-plus"></i></a>
+                        <a href="javascript:void(0)" v-else-if="this.ub_user && $route.params.userId && this.ub_user.id != $route.params.userId && !following && follower" style="color: orange; margin-right: 20px" @click="followUser()"><i class="fas fa-user-plus"></i></a>
+                        <a href="javascript:void(0)" v-else-if="this.ub_user && $route.params.userId && this.ub_user.id != $route.params.userId && following && follower" style="color: green; margin-right: 20px" @click="unfollowUser()"><i class="fas fa-user-friends"></i></a>
                         <span v-if="$route.params.userId" style="margin-right: 20px" @click="goGome()"><i class="fa fa-home"></i></span>
                         <!-- <span style="margin-right: 20px" @click="toggleListType()"><i :class="listView? 'fa fa-list' : 'fa fa-newspaper'"/></span> -->
                         <span v-if="$route.params.userId"><i class="fas fa-share-alt" v-mpopover:top="$t('tooltip-unboxing-link')" v-bspopover:top="'<i class=\'fab fa-twitter share\'></i><i class=\'fab fa-facebook share\'></i><img id=\'kakaoshare\' src=\'./img/icons/kakaotalk.png\'/><i class=\'fa fa-link share\'>'"></i></span>
@@ -110,6 +114,8 @@ export default {
     data() {
         return {
             isManager : false,
+            following: false,
+            follower: false,
             ownerName : '',
             fetching : true,
             myList : false,
@@ -220,6 +226,14 @@ export default {
                                 })
                                 this.setFollowerList(followerList);
                             });
+
+                            if(this.ub_followList.followingList.indexOf(this.$route.params.userId) >= 0) {
+                                this.following = true;
+                            }
+
+                            if(this.ub_followList.followerList.indexOf(this.$route.params.userId) >= 0) {
+                                this.follower = true;
+                            }
                         }
                     }
                 })
@@ -367,7 +381,7 @@ export default {
         ...mapState(['ub_user', 'ub_tags', 'ub_fingerPrint', 'ub_lastCheckedPopup', 'ub_blockedList', 'ub_followList'])
     },
     methods: {
-        ...mapMutations(['setUserInfo', 'setTags', 'setFingerPrint', 'setTutorialStep', 'setUserName', 'setEmail', 'setNoAnnouncement', 'setCheckPopup', 'setPrivacyPolicyAgree', 'setFollowerList']),
+        ...mapMutations(['setUserInfo', 'setTags', 'setFingerPrint', 'setTutorialStep', 'setUserName', 'setEmail', 'setNoAnnouncement', 'setCheckPopup', 'setPrivacyPolicyAgree', 'setFollowerList', 'setFollowingList', 'setFollwingUser']),
         reload() {
             location.reload();
         },
@@ -800,6 +814,66 @@ export default {
         goGome() {
             sessionStorage.clear();
             location.href="/List"
+        },
+        followUser() {
+            this.setFollwingUser(this.$route.params.userId);
+            fb.db.ref('users/' + this.ub_user.id + '/followingList/' + this.$route.params.userId).set(true);
+            fb.db.ref('users/' + this.$route.params.userId + '/followerList/' + this.ub_user.id).set(true);
+            this.following = true;
+
+            fb.db.ref('fcmServerKey').get().then((snapshot) => {
+              if(snapshot.exists()) {
+                const fcmServerkey = snapshot.val();
+                var notiListRef = fb.db.ref('notifications/' + this.$route.params.userId);
+                var newNotiRef = notiListRef.push();
+                var date = new Date();
+                try {
+                  newNotiRef.set({
+                    timestamp: -date.getTime(),
+                    followerId: this.ub_user.id,
+                    followerName: this.ub_user.name,
+                    ownerId: this.$route.params.userId,
+                    read: false
+                  });
+
+                  fb.db.ref('users/' + this.$route.params.userId + '/fcmToken').get().then((snapshot) => {
+                    if(snapshot.exists()){
+                      const fcmTo = snapshot.val();
+                      fetch('https://fcm.googleapis.com/fcm/send', {
+                        method: 'POST',
+                        headers: {
+                          Authorization: 'key=' + fcmServerkey,
+                          "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                          to: fcmTo,
+                          notification: {
+                            title: this.ub_user.name + this.$t('noti-followed'),
+                            body: this.ub_user.name + this.$t('noti-followers-unboxing'),
+                            icon: './img/icons/apple-touch-icon.png',
+                            click_action: "/" + this.ub_user.id
+                          }
+                        })
+                      })
+                      location.reload();
+                    }
+                  })
+                } catch(e) {
+                  console.log(e);
+                  alert(e);
+                }
+              }
+            })
+        },
+        unfollowUser() {
+            var filtered = this.ub_followList.followingList.filter((data) => {
+                return data != this.$route.params.userId;
+            });
+            this.setFollowingList(filtered);
+            fb.db.ref('users/' + this.ub_user.id + '/followingList/' + this.$route.params.userId).set(null);
+            fb.db.ref('users/' + this.$route.params.userId + '/followerList/' + this.ub_user.id).set(null);
+            this.following = false;
+            location.reload();
         },
 
         async querying() {
