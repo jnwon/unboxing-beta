@@ -236,6 +236,10 @@ export default {
                             }
                         }
                     }
+                    else {
+                        alert(this.$t('alert-unknown'));
+                        location.href = '/list';
+                    }
                 })
             } catch(e) {
                 console.log(e);
